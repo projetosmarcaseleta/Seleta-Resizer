@@ -1,0 +1,38 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main # ou master, dependendo da sua branch principal
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Copy files via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "server.js,index.html"
+          target: "/var/www/seleta-resizer" # Pasta de destino na VPS
+
+      - name: Restart Application via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/seleta-resizer
+            # Garante que o PM2 está instalado globalmente
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+            # Inicia ou recarrega o servidor usando o PM2
+            pm2 start server.js --name "seleta-resizer" || pm2 restart "seleta-resizer"
+            pm2 save

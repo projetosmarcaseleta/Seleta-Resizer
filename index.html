@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seleta Resizer — Redimensionador de Imagens</title>
+  <meta name="description"
+    content="Ferramenta interna da Marca Seleta para redimensionar imagens de produtos para 1000x1000 no AnyMarket." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #14171f;
+      --card: #1a1e2a;
+      --border: #252a38;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #e8eaf0;
+      --muted: #7b82a0;
+      --radius: 14px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, .45);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+    }
+
+    /* Header */
+    header {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .logo-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 0 24px rgba(108, 99, 255, .4);
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .header-text h1 span {
+      color: var(--accent2);
+    }
+
+    .header-text p {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Card */
+    .card {
+      width: 100%;
+      max-width: 860px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media(max-width:600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .4px;
+    }
+
+    input,
+    textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .92rem;
+      padding: 12px 14px;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, .18);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--muted);
+      opacity: .7;
+    }
+
+    .hint {
+      font-size: .74rem;
+      color: var(--muted);
+      margin-top: -4px;
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .2s;
+    }
+
+    .toggle-row:hover {
+      border-color: var(--accent);
+    }
+
+    .toggle-switch {
+      width: 42px;
+      height: 24px;
+      background: var(--border);
+      border-radius: 99px;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .2s;
+    }
+
+    .toggle-row.active .toggle-switch {
+      background: var(--accent);
+    }
+
+    .toggle-row.active .toggle-switch::after {
+      transform: translateX(18px);
+    }
+
+    .toggle-label {
+      font-size: .88rem;
+      font-weight: 500;
+    }
+
+    .toggle-sub {
+      font-size: .74rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Button */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108, 99, 255, .35);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      filter: brightness(1);
+    }
+
+    .btn-primary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: .82rem;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, .15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, .3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, .25);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    /* Progress */
+    #progressWrap {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .82rem;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--surface);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    .progress-stats {
+      display: flex;
+      gap: 20px;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    .stat-val {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Log */
+    #logPanel {
+      display: none;
+    }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .log-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .log-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
+
+    .log-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: .8rem;
+      background: var(--surface);
+      border-left: 3px solid var(--border);
+      animation: slideIn .2s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .log-item.ok {
+      border-left-color: var(--success);
+    }
+
+    .log-item.err {
+      border-left-color: var(--danger);
+      background: rgba(239, 68, 68, .06);
+    }
+
+    .log-item.skip {
+      border-left-color: var(--warn);
+    }
+
+    .log-item.info {
+      border-left-color: var(--accent);
+    }
+
+    .log-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .log-msg {
+      flex: 1;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .log-msg strong {
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    .log-time {
+      font-size: .7rem;
+      color: var(--muted);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Summary */
+    #summaryPanel {
+      display: none;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-box .s-label {
+      font-size: .72rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .stat-box .s-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-box.ok .s-val {
+      color: var(--success);
+    }
+
+    .stat-box.err .s-val {
+      color: var(--danger);
+    }
+
+    .stat-box.warn .s-val {
+      color: var(--warn);
+    }
+
+    .stat-box.info .s-val {
+      color: var(--accent2);
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 600;
+    }
+
+    .badge-idle {
+      background: rgba(123, 130, 160, .12);
+      color: var(--muted);
+    }
+
+    .badge-running {
+      background: rgba(108, 99, 255, .18);
+      color: var(--accent2);
+    }
+
+    .badge-done {
+      background: rgba(34, 197, 94, .15);
+      color: var(--success);
+    }
+
+    .badge-error {
+      background: rgba(239, 68, 68, .15);
+      color: var(--danger);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .status-label {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: .85rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .3s cubic-bezier(.17, .67, .3, 1.2);
+      z-index: 999;
+      max-width: 360px;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo-wrap">🖼️</div>
+    <div class="header-text">
+      <h1>Seleta <span>Resizer</span></h1>
+      <p>Redimensionamento automático de imagens para 1000×1000 px no AnyMarket</p>
+    </div>
+  </header>
+
+  <!-- Config -->
+  <div class="card" id="configCard">
+    <div class="card-title">⚙️ Configuração</div>
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="token">Token AnyMarket *</label>
+        <input type="text" id="token" placeholder="gumgaToken da conta" />
+        <span class="hint">Token de autenticação da API (gumgaToken)</span>
+      </div>
+
+      <div class="field">
+        <label for="oi">Organization ID (OI)</label>
+        <input type="text" id="oi" placeholder="ex: 259064086." />
+        <span class="hint">Usado apenas no modo geral (sem SKUs)</span>
+      </div>
+
+      <div class="field full">
+        <label for="workers">Tarefas Simultâneas (Workers)</label>
+        <input type="number" id="workers" min="1" max="10" value="3" />
+        <span class="hint">Velocidade: quantas fotos são convertidas ao mesmo tempo. Máximo permitido: 10.</span>
+      </div>
+
+      <div class="field full">
+        <label for="skus">SKUs dos produtos *</label>
+        <textarea id="skus" rows="4"
+          placeholder="Informe os códigos dos produtos (id_in_client), um por linha:&#10;SKU001&#10;SKU002&#10;&#10;Deixe vazio para processar todos da conta."></textarea>
+        <span class="hint">Códigos internos dos produtos (id_in_client). Deixe vazio para processar todos.</span>
+      </div>
+
+      <div class="field full">
+        <div class="toggle-row active" id="toggleDeleteOld" onclick="toggleDelete()">
+          <div class="toggle-switch"></div>
+          <div>
+            <div class="toggle-label">🗑️ Deletar foto antiga após upload</div>
+            <div class="toggle-sub">Recomendado: mantém o catálogo limpo.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field full">
+        <div class="toggle-row" id="toggleDryRun" onclick="toggleDry()">
+          <div class="toggle-switch"></div>
+          <div>
+            <div class="toggle-label">🧪 Modo simulação (Dry Run)</div>
+            <div class="toggle-sub">Lista as fotos que seriam processadas sem fazer nenhuma alteração real.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="startBtn" onclick="startProcess()">▶ Iniciar Processamento</button>
+      <button class="btn btn-sm btn-danger" id="cancelBtn" onclick="cancelProcess()" style="display:none">✕
+        Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="card" id="progressCard" style="display:none">
+    <div class="card-title">📊 Progresso</div>
+    <div class="status-row">
+      <span class="status-label">Status:</span>
+      <span class="badge badge-idle" id="statusBadge">Aguardando</span>
+    </div>
+    <div id="progressWrap">
+      <div class="progress-header">
+        <span id="progressLabel">Processando...</span>
+        <span id="progressPct" style="font-weight:700;color:var(--accent2)">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-stats">
+        <span>Total: <span class="stat-val" id="statTotal">0</span></span>
+        <span>✅ OK: <span class="stat-val" id="statOk">0</span></span>
+        <span>⏭️ Puladas: <span class="stat-val" id="statSkip">0</span></span>
+        <span>❌ Erros: <span class="stat-val" id="statErr">0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card" id="summaryPanel">
+    <div class="card-title">🏁 Resultado Final</div>
+    <div class="summary-grid">
+      <div class="stat-box info"><span class="s-label">Total de Fotos</span><span class="s-val" id="sumTotal">0</span>
+      </div>
+      <div class="stat-box ok"> <span class="s-label">Processadas</span> <span class="s-val" id="sumOk">0</span></div>
+      <div class="stat-box warn"><span class="s-label">Puladas</span> <span class="s-val" id="sumSkip">0</span></div>
+      <div class="stat-box err"> <span class="s-label">Erros</span> <span class="s-val" id="sumErr">0</span></div>
+    </div>
+    <div class="actions" style="margin-top:20px;flex-wrap:wrap;gap:12px">
+      <button class="btn btn-primary" onclick="resetAll()">🔄 Nova Execução</button>
+      <button class="btn btn-sm" id="exportBtn" onclick="exportSpreadsheet()"
+        style="display:none;background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);">
+        📊 Exportar Planilha CSV
+      </button>
+      <button class="btn btn-sm btn-danger" id="rollbackBtn" onclick="startRollback()" style="display:none">
+        ↩ Desfazer tudo (restaurar fotos originais)
+      </button>
+    </div>
+    <p id="rollbackNote" style="display:none;font-size:.78rem;color:var(--muted);margin-top:12px">
+      ⚠️ O desfazer irá deletar as fo​tos novas e restaurar as originais como estavam antes.
+    </p>
+  </div>
+
+  <!-- Log -->
+  <div class="card" id="logPanel">
+    <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
+      <span>📋 Log de Execução</span>
+      <button onclick="clearLog()"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.75rem;padding:5px 12px;border-radius:7px;cursor:pointer;">Limpar</button>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // ─── State ────────────────────────────────────────────────────
+    let deleteOld = true;
+    let dryRun = false;
+    let running = false;
+    let cancelled = false;
+    let stats = { total: 0, ok: 0, skip: 0, err: 0 };
+    let rollbackLog = [];
+    let reportLog = [];
+
+    const MAX_LOG_ITEMS = 300;
+    const BASE_SLEEP = 700;
+    const MAX_RETRIES = 3;
+
+    // ─── localStorage ─────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      const t = localStorage.getItem('seleta_token');
+      const o = localStorage.getItem('seleta_oi');
+      const w = localStorage.getItem('seleta_workers');
+      if (t) document.getElementById('token').value = t;
+      if (o) document.getElementById('oi').value = o;
+      if (w) document.getElementById('workers').value = w;
+    });
+
+    function savePrefs() {
+      localStorage.setItem('seleta_token', document.getElementById('token').value.trim());
+      localStorage.setItem('seleta_oi', document.getElementById('oi').value.trim());
+      localStorage.setItem('seleta_workers', document.getElementById('workers').value.trim());
+    }
+
+    // ─── Sanitize (evita XSS com dados vindos da API) ─────────────
+    function esc(str) {
+      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ─── Toggles ──────────────────────────────────────────────────
+    function toggleDelete() {
+      if (running) return;
+      deleteOld = !deleteOld;
+      document.getElementById('toggleDeleteOld').classList.toggle('active', deleteOld);
+    }
+    function toggleDry() {
+      if (running) return;
+      dryRun = !dryRun;
+      document.getElementById('toggleDryRun').classList.toggle('active', dryRun);
+    }
+
+    // ─── Toast ────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(icon, msg) {
+      const t = document.getElementById('toast');
+      t.innerHTML = `<span style="font-size:1.1rem">${icon}</span><span>${esc(msg)}</span>`;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    // ─── Log ──────────────────────────────────────────────────────
+    function addLog(type, icon, msg) {
+      document.getElementById('logPanel').style.display = 'block';
+      const list = document.getElementById('logList');
+      while (list.children.length >= MAX_LOG_ITEMS) list.removeChild(list.firstChild);
+      const now = new Date().toLocaleTimeString('pt-BR');
+      const item = document.createElement('div');
+      item.className = `log-item ${type}`;
+      item.innerHTML = `<span class="log-icon">${icon}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
+      list.appendChild(item);
+      list.scrollTop = list.scrollHeight;
+    }
+    function clearLog() { document.getElementById('logList').innerHTML = ''; }
+
+    // ─── Progress ─────────────────────────────────────────────────
+    function setProgress(done, total, label) {
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('progressLabel').textContent = label || `Processando ${done} de ${total}`;
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statOk').textContent = stats.ok;
+      document.getElementById('statSkip').textContent = stats.skip;
+      document.getElementById('statErr').textContent = stats.err;
+    }
+    function setStatus(type, text) {
+      const b = document.getElementById('statusBadge');
+      b.className = `badge badge-${type}`;
+      b.textContent = text;
+    }
+
+    // ─── Reset / Cancel ───────────────────────────────────────────
+    function resetAll() {
+      running = false; cancelled = false;
+      stats = { total: 0, ok: 0, skip: 0, err: 0 };
+      reportLog = [];
+      rollbackLog = [];
+      ['progressCard', 'summaryPanel', 'logPanel'].forEach(id => document.getElementById(id).style.display = 'none');
+      document.getElementById('startBtn').style.display = 'inline-flex';
+      document.getElementById('cancelBtn').style.display = 'none';
+      document.getElementById('exportBtn').style.display = 'none';
+      document.getElementById('rollbackBtn').style.display = 'none';
+      document.getElementById('rollbackNote').style.display = 'none';
+      document.getElementById('logList').innerHTML = '';
+      setProgress(0, 0, '');
+    }
+    function cancelProcess() {
+      cancelled = true;
+      addLog('warn', '⛔', 'Cancelamento solicitado — aguardando item atual finalizar...');
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // Fetch com retentativas para erros de rede e rate limit
+    async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
+      let lastErr;
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const r = await fetch(url, options);
+          if (r.status === 429) {
+            const wait = attempt * 3000;
+            addLog('warn', '⏳', `Rate limit (429). Aguardando ${wait / 1000}s antes de tentar novamente...`);
+            await sleep(wait);
+            continue;
+          }
+          return r;
+        } catch (e) {
+          lastErr = e;
+          if (attempt < retries) {
+            addLog('warn', '🔁', `Tentativa ${attempt}/${retries} falhou (${esc(e.message)}). Aguardando ${attempt * 1500}ms...`);
+            await sleep(attempt * 1500);
+          }
+        }
+      }
+      throw lastErr || new Error('Falha após múltiplas tentativas.');
+    }
+
+    // ─── AnyMarket helpers ────────────────────────────────────────
+    async function doDelete(prodId, photoId, token) {
+      try {
+        const r = await fetchWithRetry(`https://api.anymarket.com.br/v2/products/${prodId}/images/${photoId}`, {
+          method: 'DELETE', headers: { 'gumgaToken': token }
+        });
+        if (r.ok || r.status === 204) addLog('ok', '🗑️', `Foto antiga <strong>${esc(photoId)}</strong> removida.`);
+        else addLog('warn', '⚠️', `DELETE retornou ${r.status} para foto <strong>${esc(photoId)}</strong>.`);
+      } catch (e) { addLog('warn', '⚠️', `Erro no DELETE: ${esc(e.message)}`); }
+    }
+
+    async function doPutMain(prodId, newId, ph, token) {
+      try {
+        await sleep(500);
+        const r = await fetchWithRetry(`https://api.anymarket.com.br/v2/products/${prodId}/images`, {
+          method: 'PUT',
+          headers: { 'gumgaToken': token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: Number(newId), index: ph.index ?? ph.product_photo_index ?? 0, main: true })
+        });
+        if (r.ok) addLog('ok', '⭐', `Foto <strong>${esc(newId)}</strong> definida como principal.`);
+        else addLog('warn', '⚠️', `PUT main retornou ${r.status} para foto <strong>${esc(newId)}</strong>.`);
+      } catch (e) { addLog('warn', '⚠️', `Erro no PUT main: ${esc(e.message)}`); }
+    }
+
+
+
+    // POST nova foto — retentativas apenas em erros transitórios (rede, 429, 5xx)
+    // Erros 4xx (422, 400, etc.) falham imediatamente: são rejeições da API, não retentáveis
+    async function postPhoto(prodId, body, token) {
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        let resp;
+        try {
+          resp = await fetch(`https://api.anymarket.com.br/v2/products/${prodId}/images`, {
+            method: 'POST',
+            headers: { 'gumgaToken': token, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+        } catch (e) {
+          addLog('warn', '🔁', `Tentativa ${attempt}/${MAX_RETRIES} — erro de rede: ${esc(e.message)}`);
+          if (attempt < MAX_RETRIES) { await sleep(attempt * 2000); continue; }
+          return null;
+        }
+
+        if (resp.status === 429) {
+          const wait = attempt * 3000;
+          addLog('warn', '⏳', `Rate limit (429). Aguardando ${wait / 1000}s (tentativa ${attempt}/${MAX_RETRIES})...`);
+          await sleep(wait);
+          continue;
+        }
+
+        let data = {};
+        try { data = await resp.json(); } catch { /* resposta não-JSON */ }
+
+        // 4xx (exceto 429): erro da API, não adianta retentrar
+        if (resp.status >= 400 && resp.status < 500) {
+          const errMsg = data.message || data.error || JSON.stringify(data).slice(0, 150);
+          addLog('err', '❌', `API rejeitou o POST (${resp.status}): ${esc(errMsg)}`);
+          return null;
+        }
+
+        // 5xx: erro do servidor, pode tentar novamente
+        if (resp.status >= 500) {
+          addLog('warn', '🔁', `Tentativa ${attempt}/${MAX_RETRIES} — servidor com erro (${resp.status}).`);
+          if (attempt < MAX_RETRIES) { await sleep(attempt * 2000); continue; }
+          return null;
+        }
+
+        if (data.id) return data.id;
+
+        const errMsg = data.message || data.error || JSON.stringify(data).slice(0, 150);
+        addLog('warn', '🔁', `Tentativa ${attempt}/${MAX_RETRIES} — resposta inesperada: ${esc(errMsg)}`);
+        if (attempt < MAX_RETRIES) await sleep(attempt * 2000);
+      }
+      return null;
+    }
+
+    // ─── MAIN PROCESS ─────────────────────────────────────────────
+    async function startProcess() {
+      const token = document.getElementById('token').value.trim();
+      const oi = document.getElementById('oi').value.trim();
+      const skuRaw = document.getElementById('skus').value.trim();
+
+      if (!token) { showToast('⚠️', 'Preencha o Token AnyMarket antes de iniciar.'); return; }
+
+      savePrefs();
+      running = true;
+      cancelled = false;
+      stats = { total: 0, ok: 0, skip: 0, err: 0 };
+      rollbackLog = [];
+      reportLog = [];
+
+      document.getElementById('progressCard').style.display = 'block';
+      document.getElementById('progressWrap').style.display = 'flex';
+      document.getElementById('summaryPanel').style.display = 'none';
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('cancelBtn').style.display = 'inline-flex';
+      setStatus('running', '⏳ Executando');
+
+      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+      try {
+        let photos = [];
+
+        // ── Modo SKU ─────────────────────────────────────────────
+        if (skuList.length > 0) {
+          addLog('info', '🔍', `Buscando <strong>${skuList.length}</strong> SKU(s) na API AnyMarket...`);
+
+          for (const sku of skuList) {
+            if (cancelled) break;
+            addLog('info', '🌐', `Consultando SKU <strong>${esc(sku)}</strong>...`);
+
+            let skuResp;
+            try {
+              skuResp = await fetchWithRetry(
+                `https://api.anymarket.com.br/v2/skus?idInClient=${encodeURIComponent(sku)}&limit=10`,
+                { headers: { 'gumgaToken': token } }
+              );
+            } catch (e) {
+              addLog('err', '❌', `Erro de rede ao buscar SKU <strong>${esc(sku)}</strong>: ${esc(e.message)}`);
+              stats.err++; continue;
+            }
+
+            if (!skuResp.ok) { addLog('err', '❌', `Erro ao buscar SKU <strong>${esc(sku)}</strong> (${skuResp.status})`); stats.err++; continue; }
+
+            const skuData = await skuResp.json();
+            const skuItems = skuData.content || skuData.items || (Array.isArray(skuData) ? skuData : []);
+
+            if (skuItems.length === 0) { addLog('skip', '⚠️', `SKU <strong>${esc(sku)}</strong> não encontrado.`); stats.skip++; continue; }
+
+            const productIds = [...new Set(
+              skuItems
+                .map(s => s.idProduct || s.id_product || s.productId || (s.product && (s.product.id || s.product.idProduct)))
+                .filter(Boolean)
+            )];
+
+            if (productIds.length === 0) {
+              addLog('warn', '⚠️', `idProduct não encontrado para SKU <strong>${esc(sku)}</strong> — buscando via /v2/products...`);
+              try {
+                const pResp = await fetchWithRetry(
+                  `https://api.anymarket.com.br/v2/products?sku=${encodeURIComponent(sku)}&limit=10`,
+                  { headers: { 'gumgaToken': token } }
+                );
+                if (pResp.ok) {
+                  const pData = await pResp.json();
+                  (pData.content || pData.items || []).forEach(p => p.id && productIds.push(p.id));
+                }
+              } catch (e) { /* fallthrough */ }
+            }
+
+            if (productIds.length === 0) {
+              addLog('err', '❌', `Não encontrei o Produto para o SKU <strong>${esc(sku)}</strong>.`);
+              stats.err++; continue;
+            }
+
+            for (const productId of productIds) {
+              if (cancelled) break;
+              addLog('info', '📦', `SKU <strong>${esc(sku)}</strong> → Produto <strong>${esc(productId)}</strong>. Buscando fotos...`);
+
+              let photoResp;
+              try {
+                photoResp = await fetchWithRetry(
+                  `https://api.anymarket.com.br/v2/products/${productId}/images`,
+                  { headers: { 'gumgaToken': token } }
+                );
+              } catch (e) {
+                addLog('err', '❌', `Erro de rede ao buscar fotos do produto <strong>${esc(productId)}</strong>: ${esc(e.message)}`);
+                stats.err++; continue;
+              }
+
+              if (!photoResp.ok) { addLog('err', '❌', `Erro ao buscar fotos do produto <strong>${esc(productId)}</strong> (${photoResp.status})`); stats.err++; continue; }
+
+              const photoData = await photoResp.json();
+              const prodPhotos = Array.isArray(photoData) ? photoData : (photoData.images || photoData.content || photoData.photos || []);
+
+              addLog('info', 'ℹ️', `Produto <strong>${esc(productId)}</strong>: <strong>${prodPhotos.length}</strong> foto(s) encontrada(s).`);
+              for (const ph of prodPhotos) photos.push({ ...ph, productId, skuCode: sku });
+            }
+          }
+
+        // ── Modo geral ────────────────────────────────────────────
+        } else {
+          const oiFilter = oi ? `&oi=${encodeURIComponent(oi)}` : '';
+          addLog('info', '🔍', oi ? `Buscando produtos do OI <strong>${esc(oi)}</strong>...` : 'Buscando todos os produtos da conta...');
+
+          let page = 0, totalPages = 1;
+          while (page < totalPages) {
+            if (cancelled) break;
+            let prodResp;
+            try {
+              prodResp = await fetchWithRetry(
+                `https://api.anymarket.com.br/v2/products?limit=50&offset=${page * 50}${oiFilter}`,
+                { headers: { 'gumgaToken': token } }
+              );
+            } catch (e) {
+              throw new Error(`Erro de rede ao listar produtos: ${e.message}`);
+            }
+            if (!prodResp.ok) throw new Error(`Erro ao listar produtos (${prodResp.status})`);
+            const prodData = await prodResp.json();
+            const products = prodData.content || prodData.items || (Array.isArray(prodData) ? prodData : []);
+            totalPages = prodData.totalPages ?? 1;
+            page++;
+            if (products.length === 0 && page === 1) throw new Error('Nenhum produto encontrado. Verifique o token.');
+
+            addLog('info', '📦', `Página ${page}/${totalPages} — <strong>${products.length}</strong> produto(s).`);
+            for (const prod of products) {
+              if (cancelled) break;
+              try {
+                const photoResp = await fetchWithRetry(
+                  `https://api.anymarket.com.br/v2/products/${prod.id}/images`,
+                  { headers: { 'gumgaToken': token } }
+                );
+                if (!photoResp.ok) continue;
+                const photoData = await photoResp.json();
+                const prodPhotos = Array.isArray(photoData) ? photoData : (photoData.images || photoData.content || photoData.photos || []);
+                for (const ph of prodPhotos) photos.push({ ...ph, productId: prod.id });
+              } catch (e) { /* produto com erro de rede — continuar para o próximo */ }
+            }
+            if (page < totalPages) await sleep(300);
+          }
+          addLog('ok', '✅', `Coleta concluída. <strong>${photos.length}</strong> foto(s) para verificar.`);
+        }
+
+        stats.total = photos.length;
+        addLog('info', '📸', `<strong>${photos.length}</strong> foto(s) encontradas. Iniciando processamento...`);
+
+        if (photos.length === 0) {
+          setStatus('done', '✅ Concluído');
+          addLog('warn', '⚠️', 'Nenhuma foto encontrada. Verifique token e SKUs.');
+          finalize(false); return;
+        }
+
+        // ── Dry Run ───────────────────────────────────────────────
+        if (dryRun) {
+          addLog('info', '🧪', '<strong>MODO SIMULAÇÃO</strong> — nenhuma alteração será feita.');
+          for (let i = 0; i < photos.length; i++) {
+            const ph = photos[i];
+            const src = ph.standardUrl || ph.originalImage || ph.standard_url || ph.url || ph.original_url || '';
+            const weservPreview = src ? `https://images.weserv.nl/?url=${src}&w=1000&h=1000&fit=contain&bg=white&output=jpg` : '';
+            addLog('info', '🔗', `[${i + 1}/${photos.length}] Produto <strong>${esc(ph.productId)}</strong> | Foto <strong>${esc(ph.id)}</strong> | <span style="word-break:break-all;color:var(--muted)">${esc(src).slice(0, 80)}…</span>`);
+            reportLog.push({ sku: ph.skuCode || '', prodId: ph.productId, oldPhotoId: ph.id, oldUrl: src, newPhotoId: '(simulação)', newUrl: weservPreview, status: 'SIMULACAO' });
+            stats.ok++;
+            setProgress(i + 1, photos.length);
+            await sleep(20);
+          }
+          setStatus('done', '✅ Simulação concluída');
+          finalize(false); return;
+        }
+
+        // ── Processar fotos ───────────────────────────────────────
+        let currentIndex = 0;
+        let photosProcessed = 0;
+        
+        async function processPhotoTask(index) {
+          const ph = photos[index];
+          const prodId = ph.productId;
+          const isMain = ph.main === true || ph.main === 1 || ph.main_photo === '1' || ph.main_photo === 1;
+          const variation = ph.variation || ph.variationValue || null;
+
+          const srcUrl = ph.standardUrl || ph.originalImage || ph.url || '';
+          const restoreUrl = ph.originalImage || ph.standardUrl || ph.url || '';
+          const srcW = Number(ph.standardWidth) || 0;
+          const srcH = Number(ph.standardHeight) || 0;
+
+          addLog('info', '⏳', `[${index + 1}/${photos.length}] Foto <strong>${esc(ph.id)}</strong> — produto <strong>${esc(prodId)}</strong>`);
+
+          if (!srcUrl) {
+            addLog('err', '❌', `Foto <strong>${esc(ph.id)}</strong> sem URL. Pulando.`);
+            stats.err++; return;
+          }
+
+          if (srcW === 1000 && srcH === 1000) {
+            addLog('skip', '⏭️', `Foto <strong>${esc(ph.id)}</strong> já é 1000×1000. Pulando.`);
+            stats.skip++; await sleep(50); return;
+          }
+          if (srcW) addLog('info', '📐', `Dimensões: <strong>${srcW}×${srcH}</strong> — será redimensionada.`);
+
+          // URL weserv sem encode (conforme comportamento validado)
+          const weservUrl = `https://images.weserv.nl/?url=${srcUrl}&w=1000&h=1000&fit=contain&bg=white&output=jpg`;
+
+          addLog('info', '☁️', `Redimensionando e hospedando via bridge local...`);
+          let finalUrl = weservUrl; // fallback
+          try {
+            const bridgePath = window.location.pathname.replace(/\/$/, '') + '/api/bridge';
+            const bridgeResp = await fetchWithRetry(bridgePath, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ weservUrl })
+            });
+            if (bridgeResp.ok) {
+              const j = await bridgeResp.json();
+              if (j && j.url) {
+                finalUrl = j.url;
+                addLog('ok', '🔗', `Ponte finalizada: imagem hospedada com sucesso.`);
+              } else {
+                addLog('warn', '⚠️', `Bridge não retornou URL. Usando fallback weserv.`);
+              }
+            } else {
+              const errText = await bridgeResp.text().catch(() => '');
+              addLog('warn', '⚠️', `Bridge falhou (${bridgeResp.status}). ${esc(errText.slice(0,100))} Usando fallback.`);
+            }
+          } catch (e) {
+            addLog('warn', '⚠️', `Erro no bridge (${esc(e.message)}). Usando fallback weserv.`);
+          }
+
+          const postBody = { url: finalUrl, index: ph.index ?? ph.product_photo_index ?? 0, main: false };
+          if (variation) postBody.variation = variation;
+
+          // Tenta até MAX_RETRIES vezes — foto original só é deletada se POST tiver sucesso
+          const newPhotoId = await postPhoto(prodId, postBody, token);
+
+          if (!newPhotoId) {
+            addLog('err', '❌', `Foto <strong>${esc(ph.id)}</strong> falhou após ${MAX_RETRIES} tentativas. Foto original preservada.`);
+            reportLog.push({ sku: ph.skuCode || '', prodId, oldPhotoId: ph.id, oldUrl: srcUrl, newPhotoId: '', newUrl: '', status: 'ERRO_POST' });
+            stats.err++; await sleep(BASE_SLEEP); return;
+          }
+
+          addLog('ok', '📤', `Nova foto enviada — ID: <strong>${esc(newPhotoId)}</strong>`);
+
+          rollbackLog.push({
+            prodId, oldPhotoId: ph.id, restoreUrl, newPhotoId,
+            index: ph.index ?? ph.product_photo_index ?? 0,
+            isMain, variation, wasDeleted: deleteOld
+          });
+
+          reportLog.push({
+            sku: ph.skuCode || '', prodId,
+            oldPhotoId: ph.id, oldUrl: srcUrl,
+            newPhotoId, newUrl: weservUrl, status: 'OK'
+          });
+
+          if (deleteOld) await doDelete(prodId, ph.id, token);
+          if (isMain) await doPutMain(prodId, newPhotoId, ph, token);
+
+          stats.ok++;
+          await sleep(BASE_SLEEP);
+        }
+
+        const workerLimit = Math.max(1, Math.min(10, parseInt(document.getElementById('workers')?.value || 1)));
+        
+        async function runWorker() {
+          while (currentIndex < photos.length && !cancelled) {
+             const index = currentIndex++;
+             await processPhotoTask(index);
+             photosProcessed++;
+             setProgress(photosProcessed, photos.length);
+          }
+          if (cancelled) { addLog('warn', '⛔', 'Processamento cancelado no worker atual.'); }
+        }
+
+        const workersList = [];
+        for (let w = 0; w < workerLimit; w++) {
+           workersList.push(runWorker());
+        }
+        await Promise.all(workersList);
+
+        setStatus(cancelled ? 'error' : 'done', cancelled ? '⛔ Cancelado' : '✅ Concluído');
+        finalize(cancelled);
+
+      } catch (err) {
+        addLog('err', '❌', `Erro fatal: <strong>${esc(err.message)}</strong>`);
+        setStatus('error', '❌ Erro');
+        showToast('❌', err.message);
+        finalize(false);
+      }
+    }
+
+    function finalize(wasCancelled) {
+      running = false;
+      document.getElementById('startBtn').style.display = 'inline-flex';
+      document.getElementById('cancelBtn').style.display = 'none';
+      document.getElementById('summaryPanel').style.display = 'block';
+      document.getElementById('sumTotal').textContent = stats.total;
+      document.getElementById('sumOk').textContent = stats.ok;
+      document.getElementById('sumSkip').textContent = stats.skip;
+      document.getElementById('sumErr').textContent = stats.err;
+
+      if (wasCancelled) {
+        showToast('⛔', `Cancelado. ${stats.ok} foto(s) processadas.`);
+      } else if (stats.err === 0 && stats.ok > 0) {
+        showToast('🎉', `${stats.ok} foto(s) processadas com sucesso!`);
+      } else if (stats.err > 0) {
+        showToast('⚠️', `Concluído com ${stats.err} erro(s). Veja o log.`);
+      }
+
+      if (rollbackLog.length > 0 && !dryRun) {
+        document.getElementById('rollbackBtn').style.display = 'inline-flex';
+        document.getElementById('rollbackNote').style.display = 'block';
+      }
+      if (reportLog.length > 0) {
+        document.getElementById('exportBtn').style.display = 'inline-flex';
+      }
+    }
+
+    // ─── EXPORT CSV ─────────────────────────────────────────────
+    function exportSpreadsheet() {
+      if (reportLog.length === 0) { showToast('ℹ️', 'Nenhum dado para exportar.'); return; }
+
+      const BOM = '\uFEFF';
+      const headers = ['SKU', 'Product ID', 'Photo ID (Antigo)', 'URL Antiga', 'Photo ID (Novo)', 'URL Nova', 'Status'];
+
+      const rows = reportLog.map(r => [
+        r.sku, r.prodId, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status
+      ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'));
+
+      const csv = BOM + [headers.map(h => `"${h}"`).join(';'), ...rows].join('\n');
+
+      const now = new Date();
+      const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+      const fileName = `seleta_resizer_${ts}.csv`;
+
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
+      } else {
+        const a = document.createElement('a');
+        a.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+        a.setAttribute('download', fileName);
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 200);
+      }
+
+      showToast('📊', `Planilha exportada com ${reportLog.length} linha(s)!`);
+    }
+
+    // ─── ROLLBACK ────────────────────────────────────────────────
+    let rollbackConfirmPending = false;
+    let rollbackConfirmTimer = null;
+
+    async function startRollback() {
+      const token = document.getElementById('token').value.trim();
+      if (!token) { showToast('⚠️', 'Token necessário para desfazer.'); return; }
+      if (rollbackLog.length === 0) { showToast('ℹ️', 'Nada a desfazer.'); return; }
+
+      if (!rollbackConfirmPending) {
+        rollbackConfirmPending = true;
+        const btn = document.getElementById('rollbackBtn');
+        btn.style.background = 'rgba(245,158,11,.25)';
+        btn.style.borderColor = 'rgba(245,158,11,.6)';
+        btn.style.color = '#f59e0b';
+        btn.textContent = `⚠️ Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
+        rollbackConfirmTimer = setTimeout(() => {
+          rollbackConfirmPending = false;
+          btn.style.background = '';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+          btn.textContent = '↩ Desfazer tudo (restaurar fotos originais)';
+        }, 5000);
+        return;
+      }
+
+      clearTimeout(rollbackConfirmTimer);
+      rollbackConfirmPending = false;
+
+      document.getElementById('rollbackBtn').disabled = true;
+      document.getElementById('rollbackBtn').textContent = '⏳ Desfazendo...';
+      document.getElementById('rollbackNote').style.display = 'none';
+
+      clearLog();
+      addLog('info', '↩️', `Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
+
+      let rbOk = 0, rbErr = 0;
+
+      for (const entry of rollbackLog) {
+        const { prodId, oldPhotoId, restoreUrl, newPhotoId, index, variation, wasDeleted } = entry;
+        addLog('info', '🔄', `Restaurando produto <strong>${esc(prodId)}</strong> — foto <strong>${esc(oldPhotoId)}</strong>`);
+
+        try {
+          if (newPhotoId) {
+            const delResp = await fetchWithRetry(
+              `https://api.anymarket.com.br/v2/products/${prodId}/images/${newPhotoId}`,
+              { method: 'DELETE', headers: { 'gumgaToken': token } }
+            );
+            if (delResp.ok || delResp.status === 204)
+              addLog('ok', '🗑️', `Foto nova <strong>${esc(newPhotoId)}</strong> removida.`);
+            else
+              addLog('warn', '⚠️', `DELETE retornou ${delResp.status}.`);
+          }
+
+          if (wasDeleted && restoreUrl) {
+            const body = { url: restoreUrl, index, main: false };
+            if (variation) body.variation = variation;
+            let postResp;
+            try {
+              postResp = await fetchWithRetry(
+                `https://api.anymarket.com.br/v2/products/${prodId}/images`,
+                { method: 'POST', headers: { 'gumgaToken': token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+              );
+            } catch (e) {
+              addLog('err', '❌', `Erro de rede ao restaurar: ${esc(e.message)}`);
+              rbErr++; await sleep(800); continue;
+            }
+            let postData = {};
+            try { postData = await postResp.json(); } catch { /* resposta não-JSON */ }
+            if (postData.id)
+              addLog('ok', '📤', `Foto original restaurada — ID: <strong>${esc(postData.id)}</strong>`);
+            else
+              addLog('err', '❌', `Falha ao restaurar: ${esc(JSON.stringify(postData).slice(0, 150))}`);
+          } else if (!wasDeleted) {
+            addLog('skip', 'ℹ️', `Foto original não foi deletada — apenas nova foto removida.`);
+          }
+          rbOk++;
+        } catch (e) {
+          addLog('err', '❌', `Erro no rollback (produto <strong>${esc(prodId)}</strong>): ${esc(e.message)}`);
+          rbErr++;
+        }
+        await sleep(800);
+      }
+
+      rollbackLog = [];
+      document.getElementById('rollbackBtn').style.display = 'none';
+      document.getElementById('rollbackBtn').disabled = false;
+      document.getElementById('rollbackBtn').textContent = '↩ Desfazer tudo (restaurar fotos originais)';
+
+      if (rbErr === 0) showToast('✅', `Rollback concluído! ${rbOk} foto(s) restauradas.`);
+      else showToast('⚠️', `Rollback com ${rbErr} erro(s). Veja o log.`);
+
+      addLog(rbErr === 0 ? 'ok' : 'skip', rbErr === 0 ? '✅' : '⚠️',
+        `Rollback finalizado — <strong>${rbOk}</strong> OK, <strong>${rbErr}</strong> erro(s).`);
+    }
+  </script>
+
+</body>
+
+</html>
