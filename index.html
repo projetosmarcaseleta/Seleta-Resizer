@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seleta Resizer — Redimensionador de Imagens</title>
+  <title>Seleta Resizer â€” Redimensionador de Imagens</title>
   <meta name="description"
     content="Ferramenta interna da Marca Seleta para redimensionar imagens de produtos para 1000x1000 no AnyMarket." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -555,22 +555,22 @@
 <body>
 
   <header>
-    <div class="logo-wrap">🖼️</div>
+    <div class="logo-wrap">ðŸ–¼ï¸</div>
     <div class="header-text">
       <h1>Seleta <span>Resizer</span></h1>
-      <p>Redimensionamento automático de imagens para 1000×1000 px no AnyMarket</p>
+      <p>Redimensionamento automÃ¡tico de imagens para 1000Ã—1000 px no AnyMarket</p>
     </div>
   </header>
 
   <!-- Config -->
   <div class="card" id="configCard">
-    <div class="card-title">⚙️ Configuração</div>
+    <div class="card-title">âš™ï¸ ConfiguraÃ§Ã£o</div>
     <div class="form-grid">
 
       <div class="field">
         <label for="token">Token AnyMarket *</label>
         <input type="text" id="token" placeholder="gumgaToken da conta" />
-        <span class="hint">Token de autenticação da API (gumgaToken)</span>
+        <span class="hint">Token de autenticaÃ§Ã£o da API (gumgaToken)</span>
       </div>
 
       <div class="field">
@@ -580,24 +580,24 @@
       </div>
 
       <div class="field full">
-        <label for="workers">Tarefas Simultâneas (Workers)</label>
+        <label for="workers">Tarefas SimultÃ¢neas (Workers)</label>
         <input type="number" id="workers" min="1" max="10" value="3" />
-        <span class="hint">Velocidade: quantas fotos são convertidas ao mesmo tempo. Máximo permitido: 10.</span>
+        <span class="hint">Velocidade: quantas fotos sÃ£o convertidas ao mesmo tempo. MÃ¡ximo permitido: 10.</span>
       </div>
 
       <div class="field full">
         <label for="skus">SKUs dos produtos *</label>
         <textarea id="skus" rows="4"
-          placeholder="Informe os códigos dos produtos (id_in_client), um por linha:&#10;SKU001&#10;SKU002&#10;&#10;Deixe vazio para processar todos da conta."></textarea>
-        <span class="hint">Códigos internos dos produtos (id_in_client). Deixe vazio para processar todos.</span>
+          placeholder="Informe os cÃ³digos dos produtos (id_in_client), um por linha:&#10;SKU001&#10;SKU002&#10;&#10;Deixe vazio para processar todos da conta."></textarea>
+        <span class="hint">CÃ³digos internos dos produtos (id_in_client). Deixe vazio para processar todos.</span>
       </div>
 
       <div class="field full">
         <div class="toggle-row active" id="toggleDeleteOld" onclick="toggleDelete()">
           <div class="toggle-switch"></div>
           <div>
-            <div class="toggle-label">🗑️ Deletar foto antiga após upload</div>
-            <div class="toggle-sub">Recomendado: mantém o catálogo limpo.</div>
+            <div class="toggle-label">ðŸ—‘ï¸ Deletar foto antiga apÃ³s upload</div>
+            <div class="toggle-sub">Recomendado: mantÃ©m o catÃ¡logo limpo.</div>
           </div>
         </div>
       </div>
@@ -606,8 +606,8 @@
         <div class="toggle-row" id="toggleDryRun" onclick="toggleDry()">
           <div class="toggle-switch"></div>
           <div>
-            <div class="toggle-label">🧪 Modo simulação (Dry Run)</div>
-            <div class="toggle-sub">Lista as fotos que seriam processadas sem fazer nenhuma alteração real.</div>
+            <div class="toggle-label">ðŸ§ª Modo simulaÃ§Ã£o (Dry Run)</div>
+            <div class="toggle-sub">Lista as fotos que seriam processadas sem fazer nenhuma alteraÃ§Ã£o real.</div>
           </div>
         </div>
       </div>
@@ -615,15 +615,15 @@
     </div>
 
     <div class="actions">
-      <button class="btn btn-primary" id="startBtn" onclick="startProcess()">▶ Iniciar Processamento</button>
-      <button class="btn btn-sm btn-danger" id="cancelBtn" onclick="cancelProcess()" style="display:none">✕
+      <button class="btn btn-primary" id="startBtn" onclick="startProcess()">â–¶ Iniciar Processamento</button>
+      <button class="btn btn-sm btn-danger" id="cancelBtn" onclick="cancelProcess()" style="display:none">âœ•
         Cancelar</button>
     </div>
   </div>
 
   <!-- Progress -->
   <div class="card" id="progressCard" style="display:none">
-    <div class="card-title">📊 Progresso</div>
+    <div class="card-title">ðŸ“Š Progresso</div>
     <div class="status-row">
       <span class="status-label">Status:</span>
       <span class="badge badge-idle" id="statusBadge">Aguardando</span>
@@ -638,16 +638,16 @@
       </div>
       <div class="progress-stats">
         <span>Total: <span class="stat-val" id="statTotal">0</span></span>
-        <span>✅ OK: <span class="stat-val" id="statOk">0</span></span>
-        <span>⏭️ Puladas: <span class="stat-val" id="statSkip">0</span></span>
-        <span>❌ Erros: <span class="stat-val" id="statErr">0</span></span>
+        <span>âœ… OK: <span class="stat-val" id="statOk">0</span></span>
+        <span>â­ï¸ Puladas: <span class="stat-val" id="statSkip">0</span></span>
+        <span>âŒ Erros: <span class="stat-val" id="statErr">0</span></span>
       </div>
     </div>
   </div>
 
   <!-- Summary -->
   <div class="card" id="summaryPanel">
-    <div class="card-title">🏁 Resultado Final</div>
+    <div class="card-title">ðŸ Resultado Final</div>
     <div class="summary-grid">
       <div class="stat-box info"><span class="s-label">Total de Fotos</span><span class="s-val" id="sumTotal">0</span>
       </div>
@@ -656,24 +656,24 @@
       <div class="stat-box err"> <span class="s-label">Erros</span> <span class="s-val" id="sumErr">0</span></div>
     </div>
     <div class="actions" style="margin-top:20px;flex-wrap:wrap;gap:12px">
-      <button class="btn btn-primary" onclick="resetAll()">🔄 Nova Execução</button>
+      <button class="btn btn-primary" onclick="resetAll()">ðŸ”„ Nova ExecuÃ§Ã£o</button>
       <button class="btn btn-sm" id="exportBtn" onclick="exportSpreadsheet()"
         style="display:none;background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);">
-        📊 Exportar Planilha CSV
+        ðŸ“Š Exportar Planilha CSV
       </button>
       <button class="btn btn-sm btn-danger" id="rollbackBtn" onclick="startRollback()" style="display:none">
-        ↩ Desfazer tudo (restaurar fotos originais)
+        â†© Desfazer tudo (restaurar fotos originais)
       </button>
     </div>
     <p id="rollbackNote" style="display:none;font-size:.78rem;color:var(--muted);margin-top:12px">
-      ⚠️ O desfazer irá deletar as fo​tos novas e restaurar as originais como estavam antes.
+      âš ï¸ O desfazer irÃ¡ deletar as foâ€‹tos novas e restaurar as originais como estavam antes.
     </p>
   </div>
 
   <!-- Log -->
   <div class="card" id="logPanel">
     <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
-      <span>📋 Log de Execução</span>
+      <span>ðŸ“‹ Log de ExecuÃ§Ã£o</span>
       <button onclick="clearLog()"
         style="background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.75rem;padding:5px 12px;border-radius:7px;cursor:pointer;">Limpar</button>
     </div>
@@ -683,20 +683,361 @@
   <div id="toast"></div>
 
   <script>
-    // ─── State ────────────────────────────────────────────────────
+    // â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let deleteOld = true;
-    let dryRun = false;
-    let running = false;
-    let cancelled = false;
-    let stats = { total: 0, ok: 0, skip: 0, err: 0 };
+    let running   = false;
+    let stats     = { total: 0, ok: 0, skip: 0, err: 0 };
     let rollbackLog = [];
-    let reportLog = [];
+    let reportLog   = [];
+    let activeSSE   = null;
 
     const MAX_LOG_ITEMS = 300;
-    const BASE_SLEEP = 700;
+
+    // â”€â”€â”€ localStorage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    window.addEventListener('DOMContentLoaded', () => {
+      const t = localStorage.getItem('seleta_token');
+      const o = localStorage.getItem('seleta_oi');
+      const w = localStorage.getItem('seleta_workers');
+      if (t) document.getElementById('token').value = t;
+      if (o) document.getElementById('oi').value = o;
+      if (w) document.getElementById('workers').value = w;
+    });
+
+    function savePrefs() {
+      localStorage.setItem('seleta_token',   document.getElementById('token').value.trim());
+      localStorage.setItem('seleta_oi',      document.getElementById('oi').value.trim());
+      localStorage.setItem('seleta_workers', document.getElementById('workers')?.value?.trim() ?? '3');
+    }
+
+    // â”€â”€â”€ Sanitize â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function esc(str) {
+      return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // â”€â”€â”€ Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function toggleDelete() {
+      if (running) return;
+      deleteOld = !deleteOld;
+      document.getElementById('toggleDeleteOld').classList.toggle('active', deleteOld);
+    }
+    function toggleDry() { /* modo simulaÃ§Ã£o removido â€” processamento Ã© server-side */ }
+
+    // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    let toastTimer = null;
+    function showToast(icon, msg) {
+      const t = document.getElementById('toast');
+      t.innerHTML = `<span style="font-size:1.1rem">${icon}</span><span>${esc(msg)}</span>`;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    // â”€â”€â”€ Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const TYPE_MAP = { info:'info', ok:'ok', err:'err', skip:'skip', error:'err' };
+    const ICON_MAP = { info:'â³', ok:'âœ…', err:'âŒ', skip:'âš ï¸' };
+
+    function addLog(tp, msg) {
+      document.getElementById('logPanel').style.display = 'block';
+      const list = document.getElementById('logList');
+      while (list.children.length >= MAX_LOG_ITEMS) list.removeChild(list.firstChild);
+      const now  = new Date().toLocaleTimeString('pt-BR');
+      const type = TYPE_MAP[tp] || 'info';
+      const icon = ICON_MAP[type] || 'â³';
+      const item = document.createElement('div');
+      item.className = `log-item ${type}`;
+      item.innerHTML = `<span class="log-icon">${icon}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
+      list.appendChild(item);
+      list.scrollTop = list.scrollHeight;
+    }
+    function clearLog() { document.getElementById('logList').innerHTML = ''; }
+
+    // â”€â”€â”€ Progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function setProgress(done, total) {
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPct').textContent  = pct + '%';
+      document.getElementById('progressLabel').textContent = `Processando ${done} de ${total}`;
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statOk').textContent    = stats.ok;
+      document.getElementById('statSkip').textContent  = stats.skip;
+      document.getElementById('statErr').textContent   = stats.err;
+    }
+    function setStatus(type, text) {
+      const b = document.getElementById('statusBadge');
+      b.className   = `badge badge-${type}`;
+      b.textContent = text;
+    }
+
+    // â”€â”€â”€ Reset / Cancel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function resetAll() {
+      running = false;
+      if (activeSSE) { activeSSE.close(); activeSSE = null; }
+      stats = { total:0, ok:0, skip:0, err:0 };
+      reportLog = []; rollbackLog = [];
+      ['progressCard','summaryPanel','logPanel'].forEach(id => document.getElementById(id).style.display = 'none');
+      document.getElementById('startBtn').style.display  = 'inline-flex';
+      document.getElementById('cancelBtn').style.display = 'none';
+      document.getElementById('exportBtn').style.display = 'none';
+      document.getElementById('rollbackBtn').style.display  = 'none';
+      document.getElementById('rollbackNote').style.display = 'none';
+      document.getElementById('logList').innerHTML = '';
+      setProgress(0, 0);
+    }
+    function cancelProcess() {
+      if (activeSSE) { activeSSE.close(); activeSSE = null; }
+      running = false;
+      addLog('skip', 'â›” Processamento cancelado pelo usuÃ¡rio.');
+      setStatus('error', 'â›” Cancelado');
+      finalize(true);
+    }
+
+    // â”€â”€â”€ SSE listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function connectSSE(jobId) {
+      const basePath = window.location.pathname.replace(/\/$/, '');
+      const url = `${basePath}/api/progress/${jobId}`;
+      const es  = new EventSource(url);
+      activeSSE = es;
+
+      es.onmessage = (e) => {
+        let data;
+        try { data = JSON.parse(e.data); } catch { return; }
+
+        if (data.event === 'log') {
+          addLog(data.tp || 'info', data.msg);
+        }
+
+        else if (data.event === 'progress') {
+          stats.total = data.total;
+          stats.ok    = data.ok;
+          stats.err   = data.erros;
+          setProgress(data.done, data.total);
+        }
+
+        else if (data.event === 'complete') {
+          es.close(); activeSSE = null;
+          const results = data.results || [];
+
+          // popular rollbackLog e reportLog
+          results.forEach(r => {
+            reportLog.push({
+              sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto,
+              oldUrl: r.url_original, newPhotoId: r._newPhotoId || '',
+              newUrl: r.nova_url || '', status: r.status,
+              motivo: r.motivo_erro || ''
+            });
+            if (r.status === 'SUCESSO' && r._newPhotoId) {
+              rollbackLog.push({
+                prodId: r.id_produto, oldPhotoId: r.id_foto,
+                restoreUrl: r.url_original, newPhotoId: r._newPhotoId,
+                index: r._idx ?? 0, isMain: r._isMain ?? false,
+                wasDeleted: r._oldDeleted ?? false
+              });
+            }
+          });
+
+          stats.total = data.total;
+          stats.ok    = data.ok;
+          stats.err   = data.erros;
+          stats.skip  = 0;
+          setProgress(data.total, data.total);
+          setStatus('done', 'âœ… ConcluÃ­do');
+          addLog('ok', `ðŸ Finalizado â€” ${data.ok} sucesso(s), ${data.erros} erro(s).`);
+          finalize(false);
+        }
+
+        else if (data.event === 'error') {
+          es.close(); activeSSE = null;
+          addLog('err', `âŒ Erro fatal: ${data.msg}`);
+          setStatus('error', 'âŒ Erro');
+          showToast('âŒ', data.msg);
+          finalize(false);
+        }
+      };
+
+      es.onerror = () => {
+        if (!activeSSE) return;
+        addLog('err', 'âŒ ConexÃ£o SSE perdida.');
+        es.close(); activeSSE = null;
+        setStatus('error', 'âŒ ConexÃ£o perdida');
+        finalize(false);
+      };
+    }
+
+    // â”€â”€â”€ MAIN PROCESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    async function startProcess() {
+      const token  = document.getElementById('token').value.trim();
+      const oi     = document.getElementById('oi').value.trim();
+      const skuRaw = document.getElementById('skus').value.trim();
+
+      if (!token) { showToast('âš ï¸', 'Preencha o Token AnyMarket antes de iniciar.'); return; }
+      if (!oi)    { showToast('âš ï¸', 'Preencha o OI (Organization ID).'); return; }
+
+      savePrefs();
+      running = true;
+      stats   = { total:0, ok:0, skip:0, err:0 };
+      rollbackLog = []; reportLog = [];
+
+      document.getElementById('progressCard').style.display  = 'block';
+      document.getElementById('progressWrap').style.display  = 'flex';
+      document.getElementById('summaryPanel').style.display  = 'none';
+      document.getElementById('startBtn').style.display      = 'none';
+      document.getElementById('cancelBtn').style.display     = 'inline-flex';
+      setStatus('running', 'â³ Executando');
+      clearLog();
+
+      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      addLog('info', `ðŸš€ Iniciando â€” OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'}`);
+
+      try {
+        const basePath = window.location.pathname.replace(/\/$/, '');
+        const resp = await fetch(`${basePath}/api/processar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oi, token, skus: skuList, deleteOld })
+        });
+
+        const json = await resp.json();
+        if (!resp.ok || !json.ok) {
+          throw new Error(json.error || `Erro ${resp.status}`);
+        }
+
+        addLog('info', `ðŸ”— Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
+        connectSSE(json.jobId);
+
+      } catch (err) {
+        addLog('err', `âŒ ${esc(err.message)}`);
+        setStatus('error', 'âŒ Erro');
+        showToast('âŒ', err.message);
+        finalize(false);
+      }
+    }
+
+    function finalize(wasCancelled) {
+      running = false;
+      document.getElementById('startBtn').style.display  = 'inline-flex';
+      document.getElementById('cancelBtn').style.display = 'none';
+      document.getElementById('summaryPanel').style.display = 'block';
+      document.getElementById('sumTotal').textContent = stats.total;
+      document.getElementById('sumOk').textContent    = stats.ok;
+      document.getElementById('sumSkip').textContent  = stats.skip;
+      document.getElementById('sumErr').textContent   = stats.err;
+
+      if (wasCancelled) {
+        showToast('â›”', `Cancelado. ${stats.ok} foto(s) processadas.`);
+      } else if (stats.err === 0 && stats.ok > 0) {
+        showToast('ðŸŽ‰', `${stats.ok} foto(s) processadas com sucesso!`);
+      } else if (stats.err > 0) {
+        showToast('âš ï¸', `ConcluÃ­do com ${stats.err} erro(s). Veja o log.`);
+      }
+
+      if (rollbackLog.length > 0) {
+        document.getElementById('rollbackBtn').style.display  = 'inline-flex';
+        document.getElementById('rollbackNote').style.display = 'block';
+      }
+      if (reportLog.length > 0) {
+        document.getElementById('exportBtn').style.display = 'inline-flex';
+      }
+    }
+
+    // â”€â”€â”€ EXPORT CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    function exportSpreadsheet() {
+      if (reportLog.length === 0) { showToast('â„¹ï¸', 'Nenhum dado para exportar.'); return; }
+      const BOM = '\uFEFF';
+      const headers = ['SKU','Product ID','Photo ID (Antigo)','URL Antiga','Photo ID (Novo)','URL Nova','Status','Motivo Erro'];
+      const rows = reportLog.map(r =>
+        [r.sku, r.prodId, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status, r.motivo]
+        .map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')
+      );
+      const csv = BOM + [headers.map(h => `"${h}"`).join(';'), ...rows].join('\n');
+      const now = new Date();
+      const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+      const a = document.createElement('a');
+      a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = `seleta_resizer_${ts}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 200);
+      showToast('ðŸ“Š', `Planilha exportada com ${reportLog.length} linha(s)!`);
+    }
+
+    // â”€â”€â”€ ROLLBACK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    let rollbackConfirmPending = false;
+    let rollbackConfirmTimer   = null;
+
+    async function startRollback() {
+      const token = document.getElementById('token').value.trim();
+      if (!token) { showToast('âš ï¸', 'Token necessÃ¡rio para desfazer.'); return; }
+      if (rollbackLog.length === 0) { showToast('â„¹ï¸', 'Nada a desfazer.'); return; }
+
+      if (!rollbackConfirmPending) {
+        rollbackConfirmPending = true;
+        const btn = document.getElementById('rollbackBtn');
+        btn.style.background   = 'rgba(245,158,11,.25)';
+        btn.style.borderColor  = 'rgba(245,158,11,.6)';
+        btn.style.color        = '#f59e0b';
+        btn.textContent        = `âš ï¸ Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
+        rollbackConfirmTimer   = setTimeout(() => {
+          rollbackConfirmPending = false;
+          btn.style.cssText = '';
+          btn.textContent = 'â†© Desfazer tudo (restaurar fotos originais)';
+        }, 5000);
+        return;
+      }
+
+      clearTimeout(rollbackConfirmTimer);
+      rollbackConfirmPending = false;
+      document.getElementById('rollbackBtn').disabled    = true;
+      document.getElementById('rollbackBtn').textContent = 'â³ Desfazendo...';
+      document.getElementById('rollbackNote').style.display = 'none';
+      clearLog();
+      addLog('info', `â†©ï¸ Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
+
+      let rbOk = 0, rbErr = 0;
+
+      for (const entry of rollbackLog) {
+        const { prodId, oldPhotoId, restoreUrl, newPhotoId, index, wasDeleted } = entry;
+        addLog('info', `ðŸ”„ Produto <strong>${esc(prodId)}</strong> â€” restaurando foto <strong>${esc(oldPhotoId)}</strong>`);
+        try {
+          if (newPhotoId) {
+            const delResp = await fetch(`https://api.anymarket.com.br/v2/products/${prodId}/images/${newPhotoId}`, {
+              method: 'DELETE', headers: { gumgaToken: token }
+            });
+            if (delResp.ok || delResp.status === 204)
+              addLog('ok', `ðŸ—‘ï¸ Foto nova <strong>${esc(newPhotoId)}</strong> removida.`);
+          }
+          if (wasDeleted && restoreUrl) {
+            const postResp = await fetch(`https://api.anymarket.com.br/v2/products/${prodId}/images`, {
+              method: 'POST',
+              headers: { gumgaToken: token, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: restoreUrl, index, main: false })
+            });
+            const d = await postResp.json().catch(() => ({}));
+            if (d.id) addLog('ok', `ðŸ“¤ Foto original restaurada â€” ID: <strong>${esc(d.id)}</strong>`);
+            else      addLog('err', `âŒ Falha ao restaurar: ${esc(JSON.stringify(d).slice(0,150))}`);
+          }
+          rbOk++;
+        } catch (e) {
+          addLog('err', `âŒ Erro: ${esc(e.message)}`);
+          rbErr++;
+        }
+        await new Promise(r => setTimeout(r, 800));
+      }
+
+      rollbackLog = [];
+      document.getElementById('rollbackBtn').style.display  = 'none';
+      document.getElementById('rollbackBtn').disabled       = false;
+      document.getElementById('rollbackBtn').textContent    = 'â†© Desfazer tudo (restaurar fotos originais)';
+      if (rbErr === 0) showToast('âœ…', `Rollback concluÃ­do! ${rbOk} foto(s) restauradas.`);
+      else             showToast('âš ï¸', `Rollback com ${rbErr} erro(s). Veja o log.`);
+    }
+
+</body>
+
+</html>
+
     const MAX_RETRIES = 3;
 
-    // ─── localStorage ─────────────────────────────────────────────
+    // â”€â”€â”€ localStorage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     window.addEventListener('DOMContentLoaded', () => {
       const t = localStorage.getItem('seleta_token');
       const o = localStorage.getItem('seleta_oi');
@@ -712,12 +1053,12 @@
       localStorage.setItem('seleta_workers', document.getElementById('workers').value.trim());
     }
 
-    // ─── Sanitize (evita XSS com dados vindos da API) ─────────────
+    // â”€â”€â”€ Sanitize (evita XSS com dados vindos da API) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function esc(str) {
       return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ─── Toggles ──────────────────────────────────────────────────
+    // â”€â”€â”€ Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function toggleDelete() {
       if (running) return;
       deleteOld = !deleteOld;
@@ -729,7 +1070,7 @@
       document.getElementById('toggleDryRun').classList.toggle('active', dryRun);
     }
 
-    // ─── Toast ────────────────────────────────────────────────────
+    // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let toastTimer = null;
     function showToast(icon, msg) {
       const t = document.getElementById('toast');
@@ -739,7 +1080,7 @@
       toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
     }
 
-    // ─── Log ──────────────────────────────────────────────────────
+    // â”€â”€â”€ Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function addLog(type, icon, msg) {
       document.getElementById('logPanel').style.display = 'block';
       const list = document.getElementById('logList');
@@ -753,7 +1094,7 @@
     }
     function clearLog() { document.getElementById('logList').innerHTML = ''; }
 
-    // ─── Progress ─────────────────────────────────────────────────
+    // â”€â”€â”€ Progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function setProgress(done, total, label) {
       const pct = total > 0 ? Math.round((done / total) * 100) : 0;
       document.getElementById('progressFill').style.width = pct + '%';
@@ -770,7 +1111,7 @@
       b.textContent = text;
     }
 
-    // ─── Reset / Cancel ───────────────────────────────────────────
+    // â”€â”€â”€ Reset / Cancel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function resetAll() {
       running = false; cancelled = false;
       stats = { total: 0, ok: 0, skip: 0, err: 0 };
@@ -787,10 +1128,10 @@
     }
     function cancelProcess() {
       cancelled = true;
-      addLog('warn', '⛔', 'Cancelamento solicitado — aguardando item atual finalizar...');
+      addLog('warn', 'â›”', 'Cancelamento solicitado â€” aguardando item atual finalizar...');
     }
 
-    // ─── Helpers ──────────────────────────────────────────────────
+    // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     // Fetch com retentativas para erros de rede e rate limit
@@ -801,7 +1142,7 @@
           const r = await fetch(url, options);
           if (r.status === 429) {
             const wait = attempt * 3000;
-            addLog('warn', '⏳', `Rate limit (429). Aguardando ${wait / 1000}s antes de tentar novamente...`);
+            addLog('warn', 'â³', `Rate limit (429). Aguardando ${wait / 1000}s antes de tentar novamente...`);
             await sleep(wait);
             continue;
           }
@@ -809,23 +1150,23 @@
         } catch (e) {
           lastErr = e;
           if (attempt < retries) {
-            addLog('warn', '🔁', `Tentativa ${attempt}/${retries} falhou (${esc(e.message)}). Aguardando ${attempt * 1500}ms...`);
+            addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${retries} falhou (${esc(e.message)}). Aguardando ${attempt * 1500}ms...`);
             await sleep(attempt * 1500);
           }
         }
       }
-      throw lastErr || new Error('Falha após múltiplas tentativas.');
+      throw lastErr || new Error('Falha apÃ³s mÃºltiplas tentativas.');
     }
 
-    // ─── AnyMarket helpers ────────────────────────────────────────
+    // â”€â”€â”€ AnyMarket helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function doDelete(prodId, photoId, token) {
       try {
         const r = await fetchWithRetry(`https://api.anymarket.com.br/v2/products/${prodId}/images/${photoId}`, {
           method: 'DELETE', headers: { 'gumgaToken': token }
         });
-        if (r.ok || r.status === 204) addLog('ok', '🗑️', `Foto antiga <strong>${esc(photoId)}</strong> removida.`);
-        else addLog('warn', '⚠️', `DELETE retornou ${r.status} para foto <strong>${esc(photoId)}</strong>.`);
-      } catch (e) { addLog('warn', '⚠️', `Erro no DELETE: ${esc(e.message)}`); }
+        if (r.ok || r.status === 204) addLog('ok', 'ðŸ—‘ï¸', `Foto antiga <strong>${esc(photoId)}</strong> removida.`);
+        else addLog('warn', 'âš ï¸', `DELETE retornou ${r.status} para foto <strong>${esc(photoId)}</strong>.`);
+      } catch (e) { addLog('warn', 'âš ï¸', `Erro no DELETE: ${esc(e.message)}`); }
     }
 
     async function doPutMain(prodId, newId, ph, token) {
@@ -836,15 +1177,15 @@
           headers: { 'gumgaToken': token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: Number(newId), index: ph.index ?? ph.product_photo_index ?? 0, main: true })
         });
-        if (r.ok) addLog('ok', '⭐', `Foto <strong>${esc(newId)}</strong> definida como principal.`);
-        else addLog('warn', '⚠️', `PUT main retornou ${r.status} para foto <strong>${esc(newId)}</strong>.`);
-      } catch (e) { addLog('warn', '⚠️', `Erro no PUT main: ${esc(e.message)}`); }
+        if (r.ok) addLog('ok', 'â­', `Foto <strong>${esc(newId)}</strong> definida como principal.`);
+        else addLog('warn', 'âš ï¸', `PUT main retornou ${r.status} para foto <strong>${esc(newId)}</strong>.`);
+      } catch (e) { addLog('warn', 'âš ï¸', `Erro no PUT main: ${esc(e.message)}`); }
     }
 
 
 
-    // POST nova foto — retentativas apenas em erros transitórios (rede, 429, 5xx)
-    // Erros 4xx (422, 400, etc.) falham imediatamente: são rejeições da API, não retentáveis
+    // POST nova foto â€” retentativas apenas em erros transitÃ³rios (rede, 429, 5xx)
+    // Erros 4xx (422, 400, etc.) falham imediatamente: sÃ£o rejeiÃ§Ãµes da API, nÃ£o retentÃ¡veis
     async function postPhoto(prodId, body, token) {
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         let resp;
@@ -855,31 +1196,31 @@
             body: JSON.stringify(body)
           });
         } catch (e) {
-          addLog('warn', '🔁', `Tentativa ${attempt}/${MAX_RETRIES} — erro de rede: ${esc(e.message)}`);
+          addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${MAX_RETRIES} â€” erro de rede: ${esc(e.message)}`);
           if (attempt < MAX_RETRIES) { await sleep(attempt * 2000); continue; }
           return null;
         }
 
         if (resp.status === 429) {
           const wait = attempt * 3000;
-          addLog('warn', '⏳', `Rate limit (429). Aguardando ${wait / 1000}s (tentativa ${attempt}/${MAX_RETRIES})...`);
+          addLog('warn', 'â³', `Rate limit (429). Aguardando ${wait / 1000}s (tentativa ${attempt}/${MAX_RETRIES})...`);
           await sleep(wait);
           continue;
         }
 
         let data = {};
-        try { data = await resp.json(); } catch { /* resposta não-JSON */ }
+        try { data = await resp.json(); } catch { /* resposta nÃ£o-JSON */ }
 
-        // 4xx (exceto 429): erro da API, não adianta retentrar
+        // 4xx (exceto 429): erro da API, nÃ£o adianta retentrar
         if (resp.status >= 400 && resp.status < 500) {
           const errMsg = data.message || data.error || JSON.stringify(data).slice(0, 150);
-          addLog('err', '❌', `API rejeitou o POST (${resp.status}): ${esc(errMsg)}`);
+          addLog('err', 'âŒ', `API rejeitou o POST (${resp.status}): ${esc(errMsg)}`);
           return null;
         }
 
         // 5xx: erro do servidor, pode tentar novamente
         if (resp.status >= 500) {
-          addLog('warn', '🔁', `Tentativa ${attempt}/${MAX_RETRIES} — servidor com erro (${resp.status}).`);
+          addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${MAX_RETRIES} â€” servidor com erro (${resp.status}).`);
           if (attempt < MAX_RETRIES) { await sleep(attempt * 2000); continue; }
           return null;
         }
@@ -887,19 +1228,19 @@
         if (data.id) return data.id;
 
         const errMsg = data.message || data.error || JSON.stringify(data).slice(0, 150);
-        addLog('warn', '🔁', `Tentativa ${attempt}/${MAX_RETRIES} — resposta inesperada: ${esc(errMsg)}`);
+        addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${MAX_RETRIES} â€” resposta inesperada: ${esc(errMsg)}`);
         if (attempt < MAX_RETRIES) await sleep(attempt * 2000);
       }
       return null;
     }
 
-    // ─── MAIN PROCESS ─────────────────────────────────────────────
+    // â”€â”€â”€ MAIN PROCESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function startProcess() {
       const token = document.getElementById('token').value.trim();
       const oi = document.getElementById('oi').value.trim();
       const skuRaw = document.getElementById('skus').value.trim();
 
-      if (!token) { showToast('⚠️', 'Preencha o Token AnyMarket antes de iniciar.'); return; }
+      if (!token) { showToast('âš ï¸', 'Preencha o Token AnyMarket antes de iniciar.'); return; }
 
       savePrefs();
       running = true;
@@ -913,20 +1254,20 @@
       document.getElementById('summaryPanel').style.display = 'none';
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('cancelBtn').style.display = 'inline-flex';
-      setStatus('running', '⏳ Executando');
+      setStatus('running', 'â³ Executando');
 
       const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
       try {
         let photos = [];
 
-        // ── Modo SKU ─────────────────────────────────────────────
+        // â”€â”€ Modo SKU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (skuList.length > 0) {
-          addLog('info', '🔍', `Buscando <strong>${skuList.length}</strong> SKU(s) na API AnyMarket...`);
+          addLog('info', 'ðŸ”', `Buscando <strong>${skuList.length}</strong> SKU(s) na API AnyMarket...`);
 
           for (const sku of skuList) {
             if (cancelled) break;
-            addLog('info', '🌐', `Consultando SKU <strong>${esc(sku)}</strong>...`);
+            addLog('info', 'ðŸŒ', `Consultando SKU <strong>${esc(sku)}</strong>...`);
 
             let skuResp;
             try {
@@ -935,16 +1276,16 @@
                 { headers: { 'gumgaToken': token } }
               );
             } catch (e) {
-              addLog('err', '❌', `Erro de rede ao buscar SKU <strong>${esc(sku)}</strong>: ${esc(e.message)}`);
+              addLog('err', 'âŒ', `Erro de rede ao buscar SKU <strong>${esc(sku)}</strong>: ${esc(e.message)}`);
               stats.err++; continue;
             }
 
-            if (!skuResp.ok) { addLog('err', '❌', `Erro ao buscar SKU <strong>${esc(sku)}</strong> (${skuResp.status})`); stats.err++; continue; }
+            if (!skuResp.ok) { addLog('err', 'âŒ', `Erro ao buscar SKU <strong>${esc(sku)}</strong> (${skuResp.status})`); stats.err++; continue; }
 
             const skuData = await skuResp.json();
             const skuItems = skuData.content || skuData.items || (Array.isArray(skuData) ? skuData : []);
 
-            if (skuItems.length === 0) { addLog('skip', '⚠️', `SKU <strong>${esc(sku)}</strong> não encontrado.`); stats.skip++; continue; }
+            if (skuItems.length === 0) { addLog('skip', 'âš ï¸', `SKU <strong>${esc(sku)}</strong> nÃ£o encontrado.`); stats.skip++; continue; }
 
             const productIds = [...new Set(
               skuItems
@@ -953,7 +1294,7 @@
             )];
 
             if (productIds.length === 0) {
-              addLog('warn', '⚠️', `idProduct não encontrado para SKU <strong>${esc(sku)}</strong> — buscando via /v2/products...`);
+              addLog('warn', 'âš ï¸', `idProduct nÃ£o encontrado para SKU <strong>${esc(sku)}</strong> â€” buscando via /v2/products...`);
               try {
                 const pResp = await fetchWithRetry(
                   `https://api.anymarket.com.br/v2/products?sku=${encodeURIComponent(sku)}&limit=10`,
@@ -967,13 +1308,13 @@
             }
 
             if (productIds.length === 0) {
-              addLog('err', '❌', `Não encontrei o Produto para o SKU <strong>${esc(sku)}</strong>.`);
+              addLog('err', 'âŒ', `NÃ£o encontrei o Produto para o SKU <strong>${esc(sku)}</strong>.`);
               stats.err++; continue;
             }
 
             for (const productId of productIds) {
               if (cancelled) break;
-              addLog('info', '📦', `SKU <strong>${esc(sku)}</strong> → Produto <strong>${esc(productId)}</strong>. Buscando fotos...`);
+              addLog('info', 'ðŸ“¦', `SKU <strong>${esc(sku)}</strong> â†’ Produto <strong>${esc(productId)}</strong>. Buscando fotos...`);
 
               let photoResp;
               try {
@@ -982,24 +1323,24 @@
                   { headers: { 'gumgaToken': token } }
                 );
               } catch (e) {
-                addLog('err', '❌', `Erro de rede ao buscar fotos do produto <strong>${esc(productId)}</strong>: ${esc(e.message)}`);
+                addLog('err', 'âŒ', `Erro de rede ao buscar fotos do produto <strong>${esc(productId)}</strong>: ${esc(e.message)}`);
                 stats.err++; continue;
               }
 
-              if (!photoResp.ok) { addLog('err', '❌', `Erro ao buscar fotos do produto <strong>${esc(productId)}</strong> (${photoResp.status})`); stats.err++; continue; }
+              if (!photoResp.ok) { addLog('err', 'âŒ', `Erro ao buscar fotos do produto <strong>${esc(productId)}</strong> (${photoResp.status})`); stats.err++; continue; }
 
               const photoData = await photoResp.json();
               const prodPhotos = Array.isArray(photoData) ? photoData : (photoData.images || photoData.content || photoData.photos || []);
 
-              addLog('info', 'ℹ️', `Produto <strong>${esc(productId)}</strong>: <strong>${prodPhotos.length}</strong> foto(s) encontrada(s).`);
+              addLog('info', 'â„¹ï¸', `Produto <strong>${esc(productId)}</strong>: <strong>${prodPhotos.length}</strong> foto(s) encontrada(s).`);
               for (const ph of prodPhotos) photos.push({ ...ph, productId, skuCode: sku });
             }
           }
 
-        // ── Modo geral ────────────────────────────────────────────
+        // â”€â”€ Modo geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         } else {
           const oiFilter = oi ? `&oi=${encodeURIComponent(oi)}` : '';
-          addLog('info', '🔍', oi ? `Buscando produtos do OI <strong>${esc(oi)}</strong>...` : 'Buscando todos os produtos da conta...');
+          addLog('info', 'ðŸ”', oi ? `Buscando produtos do OI <strong>${esc(oi)}</strong>...` : 'Buscando todos os produtos da conta...');
 
           let page = 0, totalPages = 1;
           while (page < totalPages) {
@@ -1020,7 +1361,7 @@
             page++;
             if (products.length === 0 && page === 1) throw new Error('Nenhum produto encontrado. Verifique o token.');
 
-            addLog('info', '📦', `Página ${page}/${totalPages} — <strong>${products.length}</strong> produto(s).`);
+            addLog('info', 'ðŸ“¦', `PÃ¡gina ${page}/${totalPages} â€” <strong>${products.length}</strong> produto(s).`);
             for (const prod of products) {
               if (cancelled) break;
               try {
@@ -1032,40 +1373,40 @@
                 const photoData = await photoResp.json();
                 const prodPhotos = Array.isArray(photoData) ? photoData : (photoData.images || photoData.content || photoData.photos || []);
                 for (const ph of prodPhotos) photos.push({ ...ph, productId: prod.id });
-              } catch (e) { /* produto com erro de rede — continuar para o próximo */ }
+              } catch (e) { /* produto com erro de rede â€” continuar para o prÃ³ximo */ }
             }
             if (page < totalPages) await sleep(300);
           }
-          addLog('ok', '✅', `Coleta concluída. <strong>${photos.length}</strong> foto(s) para verificar.`);
+          addLog('ok', 'âœ…', `Coleta concluÃ­da. <strong>${photos.length}</strong> foto(s) para verificar.`);
         }
 
         stats.total = photos.length;
-        addLog('info', '📸', `<strong>${photos.length}</strong> foto(s) encontradas. Iniciando processamento...`);
+        addLog('info', 'ðŸ“¸', `<strong>${photos.length}</strong> foto(s) encontradas. Iniciando processamento...`);
 
         if (photos.length === 0) {
-          setStatus('done', '✅ Concluído');
-          addLog('warn', '⚠️', 'Nenhuma foto encontrada. Verifique token e SKUs.');
+          setStatus('done', 'âœ… ConcluÃ­do');
+          addLog('warn', 'âš ï¸', 'Nenhuma foto encontrada. Verifique token e SKUs.');
           finalize(false); return;
         }
 
-        // ── Dry Run ───────────────────────────────────────────────
+        // â”€â”€ Dry Run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (dryRun) {
-          addLog('info', '🧪', '<strong>MODO SIMULAÇÃO</strong> — nenhuma alteração será feita.');
+          addLog('info', 'ðŸ§ª', '<strong>MODO SIMULAÃ‡ÃƒO</strong> â€” nenhuma alteraÃ§Ã£o serÃ¡ feita.');
           for (let i = 0; i < photos.length; i++) {
             const ph = photos[i];
             const src = ph.standardUrl || ph.originalImage || ph.standard_url || ph.url || ph.original_url || '';
             const weservPreview = src ? `https://images.weserv.nl/?url=${src}&w=1000&h=1000&fit=contain&bg=white&output=jpg` : '';
-            addLog('info', '🔗', `[${i + 1}/${photos.length}] Produto <strong>${esc(ph.productId)}</strong> | Foto <strong>${esc(ph.id)}</strong> | <span style="word-break:break-all;color:var(--muted)">${esc(src).slice(0, 80)}…</span>`);
-            reportLog.push({ sku: ph.skuCode || '', prodId: ph.productId, oldPhotoId: ph.id, oldUrl: src, newPhotoId: '(simulação)', newUrl: weservPreview, status: 'SIMULACAO' });
+            addLog('info', 'ðŸ”—', `[${i + 1}/${photos.length}] Produto <strong>${esc(ph.productId)}</strong> | Foto <strong>${esc(ph.id)}</strong> | <span style="word-break:break-all;color:var(--muted)">${esc(src).slice(0, 80)}â€¦</span>`);
+            reportLog.push({ sku: ph.skuCode || '', prodId: ph.productId, oldPhotoId: ph.id, oldUrl: src, newPhotoId: '(simulaÃ§Ã£o)', newUrl: weservPreview, status: 'SIMULACAO' });
             stats.ok++;
             setProgress(i + 1, photos.length);
             await sleep(20);
           }
-          setStatus('done', '✅ Simulação concluída');
+          setStatus('done', 'âœ… SimulaÃ§Ã£o concluÃ­da');
           finalize(false); return;
         }
 
-        // ── Processar fotos ───────────────────────────────────────
+        // â”€â”€ Processar fotos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         let currentIndex = 0;
         let photosProcessed = 0;
         
@@ -1080,23 +1421,23 @@
           const srcW = Number(ph.standardWidth) || 0;
           const srcH = Number(ph.standardHeight) || 0;
 
-          addLog('info', '⏳', `[${index + 1}/${photos.length}] Foto <strong>${esc(ph.id)}</strong> — produto <strong>${esc(prodId)}</strong>`);
+          addLog('info', 'â³', `[${index + 1}/${photos.length}] Foto <strong>${esc(ph.id)}</strong> â€” produto <strong>${esc(prodId)}</strong>`);
 
           if (!srcUrl) {
-            addLog('err', '❌', `Foto <strong>${esc(ph.id)}</strong> sem URL. Pulando.`);
+            addLog('err', 'âŒ', `Foto <strong>${esc(ph.id)}</strong> sem URL. Pulando.`);
             stats.err++; return;
           }
 
           if (srcW === 1000 && srcH === 1000) {
-            addLog('skip', '⏭️', `Foto <strong>${esc(ph.id)}</strong> já é 1000×1000. Pulando.`);
+            addLog('skip', 'â­ï¸', `Foto <strong>${esc(ph.id)}</strong> jÃ¡ Ã© 1000Ã—1000. Pulando.`);
             stats.skip++; await sleep(50); return;
           }
-          if (srcW) addLog('info', '📐', `Dimensões: <strong>${srcW}×${srcH}</strong> — será redimensionada.`);
+          if (srcW) addLog('info', 'ðŸ“', `DimensÃµes: <strong>${srcW}Ã—${srcH}</strong> â€” serÃ¡ redimensionada.`);
 
           // URL weserv sem encode (conforme comportamento validado)
           const weservUrl = `https://images.weserv.nl/?url=${srcUrl}&w=1000&h=1000&fit=contain&bg=white&output=jpg`;
 
-          addLog('info', '☁️', `Redimensionando e hospedando via bridge local...`);
+          addLog('info', 'â˜ï¸', `Redimensionando e hospedando via bridge local...`);
           let finalUrl = weservUrl; // fallback
           try {
             const bridgePath = window.location.pathname.replace(/\/$/, '') + '/api/bridge';
@@ -1109,31 +1450,31 @@
               const j = await bridgeResp.json();
               if (j && j.url) {
                 finalUrl = j.url;
-                addLog('ok', '🔗', `Ponte finalizada: imagem hospedada com sucesso.`);
+                addLog('ok', 'ðŸ”—', `Ponte finalizada: imagem hospedada com sucesso.`);
               } else {
-                addLog('warn', '⚠️', `Bridge não retornou URL. Usando fallback weserv.`);
+                addLog('warn', 'âš ï¸', `Bridge nÃ£o retornou URL. Usando fallback weserv.`);
               }
             } else {
               const errText = await bridgeResp.text().catch(() => '');
-              addLog('warn', '⚠️', `Bridge falhou (${bridgeResp.status}). ${esc(errText.slice(0,100))} Usando fallback.`);
+              addLog('warn', 'âš ï¸', `Bridge falhou (${bridgeResp.status}). ${esc(errText.slice(0,100))} Usando fallback.`);
             }
           } catch (e) {
-            addLog('warn', '⚠️', `Erro no bridge (${esc(e.message)}). Usando fallback weserv.`);
+            addLog('warn', 'âš ï¸', `Erro no bridge (${esc(e.message)}). Usando fallback weserv.`);
           }
 
           const postBody = { url: finalUrl, index: ph.index ?? ph.product_photo_index ?? 0, main: false };
           if (variation) postBody.variation = variation;
 
-          // Tenta até MAX_RETRIES vezes — foto original só é deletada se POST tiver sucesso
+          // Tenta atÃ© MAX_RETRIES vezes â€” foto original sÃ³ Ã© deletada se POST tiver sucesso
           const newPhotoId = await postPhoto(prodId, postBody, token);
 
           if (!newPhotoId) {
-            addLog('err', '❌', `Foto <strong>${esc(ph.id)}</strong> falhou após ${MAX_RETRIES} tentativas. Foto original preservada.`);
+            addLog('err', 'âŒ', `Foto <strong>${esc(ph.id)}</strong> falhou apÃ³s ${MAX_RETRIES} tentativas. Foto original preservada.`);
             reportLog.push({ sku: ph.skuCode || '', prodId, oldPhotoId: ph.id, oldUrl: srcUrl, newPhotoId: '', newUrl: '', status: 'ERRO_POST' });
             stats.err++; await sleep(BASE_SLEEP); return;
           }
 
-          addLog('ok', '📤', `Nova foto enviada — ID: <strong>${esc(newPhotoId)}</strong>`);
+          addLog('ok', 'ðŸ“¤', `Nova foto enviada â€” ID: <strong>${esc(newPhotoId)}</strong>`);
 
           rollbackLog.push({
             prodId, oldPhotoId: ph.id, restoreUrl, newPhotoId,
@@ -1163,7 +1504,7 @@
              photosProcessed++;
              setProgress(photosProcessed, photos.length);
           }
-          if (cancelled) { addLog('warn', '⛔', 'Processamento cancelado no worker atual.'); }
+          if (cancelled) { addLog('warn', 'â›”', 'Processamento cancelado no worker atual.'); }
         }
 
         const workersList = [];
@@ -1172,13 +1513,13 @@
         }
         await Promise.all(workersList);
 
-        setStatus(cancelled ? 'error' : 'done', cancelled ? '⛔ Cancelado' : '✅ Concluído');
+        setStatus(cancelled ? 'error' : 'done', cancelled ? 'â›” Cancelado' : 'âœ… ConcluÃ­do');
         finalize(cancelled);
 
       } catch (err) {
-        addLog('err', '❌', `Erro fatal: <strong>${esc(err.message)}</strong>`);
-        setStatus('error', '❌ Erro');
-        showToast('❌', err.message);
+        addLog('err', 'âŒ', `Erro fatal: <strong>${esc(err.message)}</strong>`);
+        setStatus('error', 'âŒ Erro');
+        showToast('âŒ', err.message);
         finalize(false);
       }
     }
@@ -1194,11 +1535,11 @@
       document.getElementById('sumErr').textContent = stats.err;
 
       if (wasCancelled) {
-        showToast('⛔', `Cancelado. ${stats.ok} foto(s) processadas.`);
+        showToast('â›”', `Cancelado. ${stats.ok} foto(s) processadas.`);
       } else if (stats.err === 0 && stats.ok > 0) {
-        showToast('🎉', `${stats.ok} foto(s) processadas com sucesso!`);
+        showToast('ðŸŽ‰', `${stats.ok} foto(s) processadas com sucesso!`);
       } else if (stats.err > 0) {
-        showToast('⚠️', `Concluído com ${stats.err} erro(s). Veja o log.`);
+        showToast('âš ï¸', `ConcluÃ­do com ${stats.err} erro(s). Veja o log.`);
       }
 
       if (rollbackLog.length > 0 && !dryRun) {
@@ -1210,9 +1551,9 @@
       }
     }
 
-    // ─── EXPORT CSV ─────────────────────────────────────────────
+    // â”€â”€â”€ EXPORT CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function exportSpreadsheet() {
-      if (reportLog.length === 0) { showToast('ℹ️', 'Nenhum dado para exportar.'); return; }
+      if (reportLog.length === 0) { showToast('â„¹ï¸', 'Nenhum dado para exportar.'); return; }
 
       const BOM = '\uFEFF';
       const headers = ['SKU', 'Product ID', 'Photo ID (Antigo)', 'URL Antiga', 'Photo ID (Novo)', 'URL Nova', 'Status'];
@@ -1239,17 +1580,17 @@
         setTimeout(() => document.body.removeChild(a), 200);
       }
 
-      showToast('📊', `Planilha exportada com ${reportLog.length} linha(s)!`);
+      showToast('ðŸ“Š', `Planilha exportada com ${reportLog.length} linha(s)!`);
     }
 
-    // ─── ROLLBACK ────────────────────────────────────────────────
+    // â”€â”€â”€ ROLLBACK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let rollbackConfirmPending = false;
     let rollbackConfirmTimer = null;
 
     async function startRollback() {
       const token = document.getElementById('token').value.trim();
-      if (!token) { showToast('⚠️', 'Token necessário para desfazer.'); return; }
-      if (rollbackLog.length === 0) { showToast('ℹ️', 'Nada a desfazer.'); return; }
+      if (!token) { showToast('âš ï¸', 'Token necessÃ¡rio para desfazer.'); return; }
+      if (rollbackLog.length === 0) { showToast('â„¹ï¸', 'Nada a desfazer.'); return; }
 
       if (!rollbackConfirmPending) {
         rollbackConfirmPending = true;
@@ -1257,13 +1598,13 @@
         btn.style.background = 'rgba(245,158,11,.25)';
         btn.style.borderColor = 'rgba(245,158,11,.6)';
         btn.style.color = '#f59e0b';
-        btn.textContent = `⚠️ Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
+        btn.textContent = `âš ï¸ Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
         rollbackConfirmTimer = setTimeout(() => {
           rollbackConfirmPending = false;
           btn.style.background = '';
           btn.style.borderColor = '';
           btn.style.color = '';
-          btn.textContent = '↩ Desfazer tudo (restaurar fotos originais)';
+          btn.textContent = 'â†© Desfazer tudo (restaurar fotos originais)';
         }, 5000);
         return;
       }
@@ -1272,17 +1613,17 @@
       rollbackConfirmPending = false;
 
       document.getElementById('rollbackBtn').disabled = true;
-      document.getElementById('rollbackBtn').textContent = '⏳ Desfazendo...';
+      document.getElementById('rollbackBtn').textContent = 'â³ Desfazendo...';
       document.getElementById('rollbackNote').style.display = 'none';
 
       clearLog();
-      addLog('info', '↩️', `Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
+      addLog('info', 'â†©ï¸', `Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
 
       let rbOk = 0, rbErr = 0;
 
       for (const entry of rollbackLog) {
         const { prodId, oldPhotoId, restoreUrl, newPhotoId, index, variation, wasDeleted } = entry;
-        addLog('info', '🔄', `Restaurando produto <strong>${esc(prodId)}</strong> — foto <strong>${esc(oldPhotoId)}</strong>`);
+        addLog('info', 'ðŸ”„', `Restaurando produto <strong>${esc(prodId)}</strong> â€” foto <strong>${esc(oldPhotoId)}</strong>`);
 
         try {
           if (newPhotoId) {
@@ -1291,9 +1632,9 @@
               { method: 'DELETE', headers: { 'gumgaToken': token } }
             );
             if (delResp.ok || delResp.status === 204)
-              addLog('ok', '🗑️', `Foto nova <strong>${esc(newPhotoId)}</strong> removida.`);
+              addLog('ok', 'ðŸ—‘ï¸', `Foto nova <strong>${esc(newPhotoId)}</strong> removida.`);
             else
-              addLog('warn', '⚠️', `DELETE retornou ${delResp.status}.`);
+              addLog('warn', 'âš ï¸', `DELETE retornou ${delResp.status}.`);
           }
 
           if (wasDeleted && restoreUrl) {
@@ -1306,21 +1647,21 @@
                 { method: 'POST', headers: { 'gumgaToken': token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
               );
             } catch (e) {
-              addLog('err', '❌', `Erro de rede ao restaurar: ${esc(e.message)}`);
+              addLog('err', 'âŒ', `Erro de rede ao restaurar: ${esc(e.message)}`);
               rbErr++; await sleep(800); continue;
             }
             let postData = {};
-            try { postData = await postResp.json(); } catch { /* resposta não-JSON */ }
+            try { postData = await postResp.json(); } catch { /* resposta nÃ£o-JSON */ }
             if (postData.id)
-              addLog('ok', '📤', `Foto original restaurada — ID: <strong>${esc(postData.id)}</strong>`);
+              addLog('ok', 'ðŸ“¤', `Foto original restaurada â€” ID: <strong>${esc(postData.id)}</strong>`);
             else
-              addLog('err', '❌', `Falha ao restaurar: ${esc(JSON.stringify(postData).slice(0, 150))}`);
+              addLog('err', 'âŒ', `Falha ao restaurar: ${esc(JSON.stringify(postData).slice(0, 150))}`);
           } else if (!wasDeleted) {
-            addLog('skip', 'ℹ️', `Foto original não foi deletada — apenas nova foto removida.`);
+            addLog('skip', 'â„¹ï¸', `Foto original nÃ£o foi deletada â€” apenas nova foto removida.`);
           }
           rbOk++;
         } catch (e) {
-          addLog('err', '❌', `Erro no rollback (produto <strong>${esc(prodId)}</strong>): ${esc(e.message)}`);
+          addLog('err', 'âŒ', `Erro no rollback (produto <strong>${esc(prodId)}</strong>): ${esc(e.message)}`);
           rbErr++;
         }
         await sleep(800);
@@ -1329,13 +1670,13 @@
       rollbackLog = [];
       document.getElementById('rollbackBtn').style.display = 'none';
       document.getElementById('rollbackBtn').disabled = false;
-      document.getElementById('rollbackBtn').textContent = '↩ Desfazer tudo (restaurar fotos originais)';
+      document.getElementById('rollbackBtn').textContent = 'â†© Desfazer tudo (restaurar fotos originais)';
 
-      if (rbErr === 0) showToast('✅', `Rollback concluído! ${rbOk} foto(s) restauradas.`);
-      else showToast('⚠️', `Rollback com ${rbErr} erro(s). Veja o log.`);
+      if (rbErr === 0) showToast('âœ…', `Rollback concluÃ­do! ${rbOk} foto(s) restauradas.`);
+      else showToast('âš ï¸', `Rollback com ${rbErr} erro(s). Veja o log.`);
 
-      addLog(rbErr === 0 ? 'ok' : 'skip', rbErr === 0 ? '✅' : '⚠️',
-        `Rollback finalizado — <strong>${rbOk}</strong> OK, <strong>${rbErr}</strong> erro(s).`);
+      addLog(rbErr === 0 ? 'ok' : 'skip', rbErr === 0 ? 'âœ…' : 'âš ï¸',
+        `Rollback finalizado â€” <strong>${rbOk}</strong> OK, <strong>${rbErr}</strong> erro(s).`);
     }
   </script>
 
