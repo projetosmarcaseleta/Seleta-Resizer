@@ -266,6 +266,9 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
+  // Strip /resizer prefix (nginx proxy pode enviar com prefixo)
+  if (req.url.startsWith('/resizer')) req.url = req.url.slice('/resizer'.length) || '/';
+
   // ── POST /api/processar ─────────────────────────────────────
   if (req.method === 'POST' && req.url === '/api/processar') {
     try {
