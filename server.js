@@ -11,6 +11,7 @@ if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
 
 const PORT        = 8080;
 const N8N_HOST    = 'api.marcaseleta.shop';
+const N8N_PORT    = 80;
 const N8N_PATH    = '/webhook/resizer/buscar-imagens';
 const AM_HOST     = 'api.anymarket.com.br';
 const SELF_BASE   = 'https://app.marcaseleta.shop/resizer';
@@ -66,18 +67,19 @@ function httpsGet(url) {
   });
 }
 
-function httpsJson(method, hostname, reqPath, body, extraHeaders = {}) {
+function jsonRequest(method, hostname, reqPath, body, extraHeaders = {}, port = 443) {
   return new Promise((resolve, reject) => {
     const payload = body ? JSON.stringify(body) : null;
+    const mod = port === 443 ? https : http;
     const opts = {
-      hostname, port: 443, path: reqPath, method,
+      hostname, port, path: reqPath, method,
       headers: {
         'Content-Type': 'application/json',
         ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
         ...extraHeaders,
       },
     };
-    const req = https.request(opts, res => {
+    const req = mod.request(opts, res => {
       const chunks = [];
       res.on('data', c => chunks.push(c));
       res.on('end', () => {
@@ -137,7 +139,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
   try {
     // 1. Buscar fotos via n8n
     emit(jobId, { event: 'log', tp: 'info', msg: '🔍 Consultando banco de dados via n8n...' });
-    const n8nResp = await httpsJson('POST', N8N_HOST, N8N_PATH, { oi, skus });
+    const n8nResp = await jsonRequest('POST', N8N_HOST, N8N_PATH, { oi, skus }, {}, N8N_PORT);
 
     if (n8nResp.status !== 200 || !n8nResp.body.ok) {
       emit(jobId, { event: 'error', msg: `Falha n8n (${n8nResp.status}): ${JSON.stringify(n8nResp.body).slice(0,200)}` });
@@ -185,7 +187,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
 
         // POST nova foto
         emit(jobId, { event: 'log', tp: 'info', msg: '   📤 Enviando nova foto ao AnyMarket...' });
-        const postR = await httpsJson('POST', AM_HOST,
+        const postR = await jsonRequest('POST', AM_HOST,
           `/v2/products/${foto.id_produto}/images`,
           { url: resized.url, index: idx, main: false },
           { gumgaToken: token }
@@ -200,7 +202,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         // PUT index + main
         emit(jobId, { event: 'log', tp: 'info', msg: `   🔢 Ajustando índice (${idx}) e main (${isMain})...` });
         try {
-          await httpsJson('PUT', AM_HOST,
+          await jsonRequest('PUT', AM_HOST,
             `/v2/products/${foto.id_produto}/images`,
             { id: Number(newPhotoId), index: idx, main: isMain },
             { gumgaToken: token }
@@ -213,7 +215,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         if (deleteOld) {
           emit(jobId, { event: 'log', tp: 'info', msg: '   🗑️  Removendo foto antiga...' });
           try {
-            await httpsJson('DELETE', AM_HOST,
+            await jsonRequest('DELETE', AM_HOST,
               `/v2/products/${foto.id_produto}/images/${foto.id_foto}`,
               null,
               { gumgaToken: token }
