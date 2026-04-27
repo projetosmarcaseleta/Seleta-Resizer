@@ -238,8 +238,8 @@
           es.close();activeSSE=null;
           const res=d.results||[];
           res.forEach(r=>{
-            reportLog.push({sku:r.sku,prodId:r.id_produto,oldPhotoId:r.id_foto,oldUrl:r.url_original,newPhotoId:r._newPhotoId||'',newUrl:r.nova_url||'',status:r.status,motivo:r.motivo_erro||''});
-            if(r.status==='SUCESSO'&&r._newPhotoId)rollbackLog.push({prodId:r.id_produto,oldPhotoId:r.id_foto,restoreUrl:r.url_original,newPhotoId:r._newPhotoId,index:r._idx??0,isMain:r._isMain??false,wasDeleted:r._oldDeleted??false});
+            reportLog.push({sku:r.sku,prodId:r.id_produto,oldPhotoId:r.id_foto,variacao:r.variacao||'',oldUrl:r.url_original,newPhotoId:r._newPhotoId||'',newUrl:r.nova_url||'',status:r.status,motivo:r.motivo_erro||''});
+            if(r.status==='SUCESSO'&&r._newPhotoId)rollbackLog.push({prodId:r.id_produto,oldPhotoId:r.id_foto,restoreUrl:r.url_original,newPhotoId:r._newPhotoId,index:r._idx??0,isMain:r._isMain??false,wasDeleted:r._oldDeleted??false,variacao:r._variacao||''});
           });
           stats.total=d.total;stats.ok=d.ok;stats.err=d.erros;stats.skip=0;
           setProgress(d.total,d.total);setStatus('done','Concluido');
@@ -309,8 +309,8 @@
     function exportSpreadsheet(){
       if(!reportLog.length){showToast('\u2139\uFE0F','Nenhum dado.');return}
       const BOM='\uFEFF';
-      const h=['SKU','Product ID','Photo ID Antigo','URL Antiga','Photo ID Novo','URL Nova','Status','Motivo'];
-      const rows=reportLog.map(r=>[r.sku,r.prodId,r.oldPhotoId,r.oldUrl,r.newPhotoId,r.newUrl,r.status,r.motivo].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';'));
+      const h=['SKU','Product ID','Variacao','Photo ID Antigo','URL Antiga','Photo ID Novo','URL Nova','Status','Motivo'];
+      const rows=reportLog.map(r=>[r.sku,r.prodId,r.variacao,r.oldPhotoId,r.oldUrl,r.newPhotoId,r.newUrl,r.status,r.motivo].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';'));
       const csv=BOM+[h.map(x=>`"${x}"`).join(';'),...rows].join('\n');
       const n=new Date();const ts=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}`;
       const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
@@ -337,7 +337,7 @@
         addLog('info',`Produto <strong>${esc(e.prodId)}</strong> \u2014 foto <strong>${esc(e.oldPhotoId)}</strong>`);
         try{
           if(e.newPhotoId){const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images/${e.newPhotoId}`,{method:'DELETE',headers:{gumgaToken:token}});if(r.ok||r.status===204)addLog('ok',`Foto nova ${esc(e.newPhotoId)} removida.`)}
-          if(e.wasDeleted&&e.restoreUrl){const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`,{method:'POST',headers:{gumgaToken:token,'Content-Type':'application/json'},body:JSON.stringify({url:e.restoreUrl,index:e.index,main:false})});const d=await r.json().catch(()=>({}));if(d.id)addLog('ok',`Foto original restaurada: ${esc(d.id)}`);else addLog('err','Falha ao restaurar')}
+          if(e.wasDeleted&&e.restoreUrl){const restoreBody={url:e.restoreUrl,index:e.index,main:false};if(e.variacao)restoreBody.variation=e.variacao;const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`,{method:'POST',headers:{gumgaToken:token,'Content-Type':'application/json'},body:JSON.stringify(restoreBody)});const d=await r.json().catch(()=>({}));if(d.id)addLog('ok',`Foto original restaurada: ${esc(d.id)}`);else addLog('err','Falha ao restaurar')}
           ok++;
         }catch(x){addLog('err',esc(x.message));er++}
         await new Promise(r=>setTimeout(r,800));

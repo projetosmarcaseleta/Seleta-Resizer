@@ -181,19 +181,21 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
     const results = [];
 
     for (let i = 0; i < fotos.length; i++) {
-      const foto    = fotos[i];
-      const srcUrl  = foto.standard_url || foto.original_url;
-      const isMain  = foto.main_photo === '1' || foto.main_photo === 1;
-      const idx     = foto.product_photo_index ?? 0;
-      const label   = `[${i+1}/${fotos.length}] Foto ${foto.id_foto} — SKU ${foto.sku || '—'}`;
+      const foto     = fotos[i];
+      const srcUrl   = foto.standard_url || foto.original_url;
+      const isMain   = foto.main_photo === '1' || foto.main_photo === 1;
+      const idx      = foto.product_photo_index ?? 0;
+      const variacao = foto.variacao || null;  // descrição da variação (ex: "Azul", "P")
+      const temVariacaoVisual = foto.tem_variacao_visual ?? false;
+      const label    = `[${i+1}/${fotos.length}] Foto ${foto.id_foto} — SKU ${foto.sku || '—'}${variacao ? ` — Var: ${variacao}` : ''}`;
 
       emit(jobId, { event: 'log', tp: 'info', msg: `⏳ ${label}` });
 
       const result = {
         sku: foto.sku, id_produto: foto.id_produto, id_foto: foto.id_foto,
-        url_original: srcUrl, nova_url: null, status: 'ERRO', motivo_erro: null,
+        variacao: variacao, url_original: srcUrl, nova_url: null, status: 'ERRO', motivo_erro: null,
         // para rollback
-        _isMain: isMain, _idx: idx,
+        _isMain: isMain, _idx: idx, _variacao: variacao,
       };
 
       let tempFilename = null;
@@ -213,11 +215,18 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         // Pequeno delay para garantir que o arquivo está acessível via HTTP
         await sleep(500);
 
+        // Montar body do POST — incluir variation se a foto tem variação
+        const postBody = { url: resized.url, index: idx, main: false };
+        if (variacao) {
+          postBody.variation = variacao;
+          emit(jobId, { event: 'log', tp: 'info', msg: `   🏷️  Variação: ${variacao}` });
+        }
+
         let postR;
         for (let attempt = 1; attempt <= 2; attempt++) {
           postR = await jsonRequest('POST', AM_HOST,
             `/v2/products/${foto.id_produto}/images`,
-            { url: resized.url, index: idx, main: false },
+            postBody,
             { gumgaToken: token }
           );
           console.log(`[DEBUG] POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
@@ -239,9 +248,11 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         // PUT index + main
         emit(jobId, { event: 'log', tp: 'info', msg: `   🔢 Ajustando índice (${idx}) e main (${isMain})...` });
         try {
+          const putBody = { id: Number(newPhotoId), index: idx, main: isMain };
+          if (variacao) putBody.variation = variacao;
           await jsonRequest('PUT', AM_HOST,
             `/v2/products/${foto.id_produto}/images`,
-            { id: Number(newPhotoId), index: idx, main: isMain },
+            putBody,
             { gumgaToken: token }
           );
         } catch (putErr) {
