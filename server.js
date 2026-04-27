@@ -215,11 +215,11 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         // Pequeno delay para garantir que o arquivo está acessível via HTTP
         await sleep(500);
 
-        // Montar body do POST — incluir variation se a foto tem variação
+        // Montar body do POST — incluir variation APENAS se tem_variacao_visual === true
         const postBody = { url: resized.url, index: idx, main: false };
-        if (variacao) {
+        if (temVariacaoVisual && variacao) {
           postBody.variation = variacao;
-          emit(jobId, { event: 'log', tp: 'info', msg: `   🏷️  Variação: ${variacao}` });
+          emit(jobId, { event: 'log', tp: 'info', msg: `   🏷️  Variação visual: ${variacao}` });
         }
 
         let postR;
@@ -249,7 +249,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         emit(jobId, { event: 'log', tp: 'info', msg: `   🔢 Ajustando índice (${idx}) e main (${isMain})...` });
         try {
           const putBody = { id: Number(newPhotoId), index: idx, main: isMain };
-          if (variacao) putBody.variation = variacao;
+          if (temVariacaoVisual && variacao) putBody.variation = variacao;
           await jsonRequest('PUT', AM_HOST,
             `/v2/products/${foto.id_produto}/images`,
             putBody,
