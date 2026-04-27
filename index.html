@@ -224,8 +224,9 @@
       setStatus('error','Cancelado');finalize(true);
     }
     function connectSSE(jobId){
-      const bp=window.location.pathname.replace(/\/$/,'');
-      const es=new EventSource(`${bp}/api/progress/${jobId}`);
+      // Forçar URL absoluta para o EventSource também
+      const sseUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/progress/' : '/api/progress/';
+      const es = new EventSource(sseUrl + jobId);
       activeSSE=es;
       es.onmessage=(e)=>{
         let d;try{d=JSON.parse(e.data)}catch{return}
@@ -266,14 +267,31 @@
       const skuList=skuRaw?skuRaw.split('\n').map(s=>s.trim()).filter(Boolean):[];
       addLog('info',`Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length?` | ${skuList.length} SKU(s)`:' | todos os produtos'}`);
       try{
-        const bp=window.location.pathname.replace(/\/$/,'');
-        const resp=await fetch(`${bp}/api/processar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oi,token,skus:skuList,deleteOld})});
-        const json=await resp.json();
-        if(!resp.ok||!json.ok)throw new Error(json.error||`Erro ${resp.status}`);
+        // Forçar URL absoluta baseada no contexto
+        const apiUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/processar' : '/api/processar';
+        
+        const resp = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oi, token, skus: skuList, deleteOld })
+        });
+        
+        const text = await resp.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`Resposta do servidor não é JSON: ${text.slice(0, 100)}`);
+        }
+
+        if(!resp.ok || !json.ok) throw new Error(json.error || `Erro ${resp.status}`);
         addLog('info',`Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
         connectSSE(json.jobId);
-      }catch(err){
-        addLog('err',esc(err.message));setStatus('error','Erro');showToast('\u274C',err.message);finalize(false);
+      } catch (err) {
+        addLog('err', esc(err.message));
+        setStatus('error', 'Erro');
+        showToast('\u274C', err.message);
+        finalize(false);
       }
     }
     function finalize(cancelled){

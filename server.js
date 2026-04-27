@@ -54,14 +54,39 @@ function httpsGet(url) {
   return new Promise((resolve, reject) => {
     const doGet = (u, hops = 0) => {
       if (hops > 5) return reject(new Error('Too many redirects'));
-      https.get(u, res => {
-        if ([301,302,303,307,308].includes(res.statusCode) && res.headers.location)
-          return doGet(res.headers.location, hops + 1);
+
+      const parsedUrl = new URL(u);
+      const protocol = parsedUrl.protocol === 'https:' ? https : http;
+
+      const options = {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7'
+        }
+      };
+
+      protocol.get(u, options, res => {
+        console.log(`[DEBUG] Download: ${u} | Status: ${res.statusCode}`);
+        if ([301,302,303,307,308].includes(res.statusCode) && res.headers.location) {
+          const next = new URL(res.headers.location, u).href;
+          console.log(`[DEBUG] Redirecionando para: ${next}`);
+          return doGet(next, hops + 1);
+        }
+
+        if (res.statusCode === 403) {
+          console.error(`[ERROR] 403 Forbidden na URL: ${u}`);
+          console.error(`[ERROR] Headers de resposta:`, JSON.stringify(res.headers));
+        }
+
         const chunks = [];
         res.on('data', c => chunks.push(c));
         res.on('end',  () => resolve({ status: res.statusCode, body: Buffer.concat(chunks) }));
         res.on('error', reject);
-      }).on('error', reject);
+      }).on('error', err => {
+        console.error(`[ERROR] Erro na requisição HTTPS: ${err.message}`);
+        reject(err);
+      });
     };
     doGet(url);
   });
@@ -113,10 +138,6 @@ async function resizeAndSave(srcUrl) {
   if (dl.status !== 200) throw new Error(`Download falhou: HTTP ${dl.status}`);
   if (!dl.body || dl.body.length < 512) throw new Error(`Imagem inválida (${dl.body?.length ?? 0} bytes)`);
 
-  const hdr = dl.body.slice(0, 4).toString('hex');
-  const ok  = hdr.startsWith('ffd8ff') || hdr.startsWith('89504e47') || dl.body.slice(0,4).toString('ascii') === 'RIFF';
-  if (!ok) throw new Error(`Formato não suportado (header: ${hdr})`);
-
   const resized = await sharp(dl.body)
     .resize(1000, 1000, { fit: 'contain', background: { r:255, g:255, b:255, alpha:1 } })
     .jpeg({ quality: 95 })
@@ -147,6 +168,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
     }
 
     const fotos = n8nResp.body.fotos || [];
+    console.log(`[DEBUG] Resposta n8n: ${JSON.stringify(n8nResp.body)}`);
     if (fotos.length === 0) {
       emit(jobId, { event: 'log', tp: 'skip', msg: '⚠️ Nenhuma imagem encontrada fora de 1000×1000.' });
       emit(jobId, { event: 'complete', total: 0, ok: 0, erros: 0, results: [] });
@@ -160,7 +182,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
 
     for (let i = 0; i < fotos.length; i++) {
       const foto    = fotos[i];
-      const srcUrl  = foto.original_url || foto.standard_url;
+      const srcUrl  = foto.standard_url || foto.original_url;
       const isMain  = foto.main_photo === '1' || foto.main_photo === 1;
       const idx     = foto.product_photo_index ?? 0;
       const label   = `[${i+1}/${fotos.length}] Foto ${foto.id_foto} — SKU ${foto.sku || '—'}`;
@@ -186,14 +208,29 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         tempFilename  = resized.filename;
 
         // POST nova foto
-        emit(jobId, { event: 'log', tp: 'info', msg: '   📤 Enviando nova foto ao AnyMarket...' });
-        const postR = await jsonRequest('POST', AM_HOST,
-          `/v2/products/${foto.id_produto}/images`,
-          { url: resized.url, index: idx, main: false },
-          { gumgaToken: token }
-        );
+        emit(jobId, { event: 'log', tp: 'info', msg: `   📤 Enviando nova foto ao AnyMarket... (URL: ${resized.url})` });
+
+        // Pequeno delay para garantir que o arquivo está acessível via HTTP
+        await sleep(500);
+
+        let postR;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          postR = await jsonRequest('POST', AM_HOST,
+            `/v2/products/${foto.id_produto}/images`,
+            { url: resized.url, index: idx, main: false },
+            { gumgaToken: token }
+          );
+          console.log(`[DEBUG] POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
+
+          if (postR.status < 400 && postR.body.id) break; // sucesso
+
+          if (attempt < 2) {
+            emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ POST falhou (tentativa ${attempt}), aguardando 3s para retry...` });
+            await sleep(3000);
+          }
+        }
         if (postR.status >= 400 || !postR.body.id)
-          throw new Error(`POST ${postR.status}: ${JSON.stringify(postR.body).slice(0,150)}`);
+          throw new Error(`POST ${postR.status}: ${JSON.stringify(postR.body).slice(0,200)}`);
 
         newPhotoId    = postR.body.id;
         result.nova_url = resized.url;
@@ -232,14 +269,10 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
       } catch (err) {
         result.motivo_erro = err.message;
         emit(jobId, { event: 'log', tp: 'err', msg: `   ❌ ${err.message}` });
-      } finally {
-        if (tempFilename) {
-          try {
-            const fp = path.join(TEMP_DIR, tempFilename);
-            if (fs.existsSync(fp)) fs.unlinkSync(fp);
-          } catch {}
-        }
       }
+      // NÃO deletar o arquivo temporário aqui!
+      // O AnyMarket faz download assíncrono da URL fornecida.
+      // O arquivo será limpo automaticamente após 10 minutos pelo setTimeout em resizeAndSave().
 
       results.push(result);
       const okN  = results.filter(r => r.status === 'SUCESSO').length;
@@ -260,17 +293,34 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
 
 // ── Servidor ─────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
+  console.log(`[DEBUG] ${new Date().toISOString()} | ${req.method} ${req.url}`);
 
   res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  // Strip /resizer prefix (nginx proxy pode enviar com prefixo)
-  if (req.url.startsWith('/resizer')) req.url = req.url.slice('/resizer'.length) || '/';
+  // Normalizar URL: 
+  // 1. Remover query strings
+  let pathname = req.url.split('?')[0];
+
+  // 2. Normalizar: remover prefixo /resizer se existir
+  if (pathname.startsWith('/resizer/')) {
+    pathname = pathname.replace('/resizer', '');
+  } else if (pathname === '/resizer') {
+    pathname = '/';
+  }
+
+  // 3. Limpar barras duplicadas e remover barra final para padronizar
+  pathname = pathname.replace(/\/+/g, '/');
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    pathname = pathname.slice(0, -1);
+  }
+
+  console.log(`[DEBUG] Pathname Processado: ${pathname}`);
 
   // ── POST /api/processar ─────────────────────────────────────
-  if (req.method === 'POST' && req.url === '/api/processar') {
+  if (req.method === 'POST' && pathname === '/api/processar') {
     try {
       const body = JSON.parse((await readBody(req)).toString());
       const oi       = (body.oi    ?? '').trim();
@@ -300,8 +350,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── GET /api/progress/:jobId — SSE ─────────────────────────
-  if (req.method === 'GET' && req.url.startsWith('/api/progress/')) {
-    const jobId = req.url.replace('/api/progress/', '').split('?')[0];
+  if (req.method === 'GET' && pathname.startsWith('/api/progress/')) {
+    const jobId = pathname.replace('/api/progress/', '').split('/')[0];
     const job   = jobs.get(jobId);
 
     if (!job) {
@@ -334,7 +384,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── POST /api/resize ─────────────────────────────────────────
-  if (req.method === 'POST' && req.url === '/api/resize') {
+  if (req.method === 'POST' && pathname === '/api/resize') {
     try {
       const { originalUrl } = JSON.parse((await readBody(req)).toString());
       if (!originalUrl?.startsWith('http')) {
@@ -354,8 +404,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── DELETE /api/temp/:filename ────────────────────────────────
-  if (req.method === 'DELETE' && req.url.startsWith('/api/temp/')) {
-    const filename = path.basename(req.url.replace('/api/temp/', ''));
+  if (req.method === 'DELETE' && pathname.startsWith('/api/temp/')) {
+    const filename = path.basename(pathname.replace('/api/temp/', ''));
     const filepath = path.join(TEMP_DIR, filename);
     try {
       if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
@@ -369,17 +419,20 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── GET /temp/:filename ───────────────────────────────────────
-  if (req.method === 'GET' && req.url.startsWith('/temp/')) {
-    const filename = path.basename(req.url.split('?')[0]);
+  if (req.method === 'GET' && pathname.startsWith('/temp/')) {
+    const filename = path.basename(pathname.split('?')[0]);
     const filepath = path.join(TEMP_DIR, filename);
-    if (!fs.existsSync(filepath)) { res.writeHead(404); res.end('Not found'); return; }
+    if (!fs.existsSync(filepath)) { 
+      console.error(`[ERROR] File not found: ${filepath}`);
+      res.writeHead(404); res.end('Not found'); return; 
+    }
     res.writeHead(200, { 'Content-Type': 'image/jpeg' });
     fs.createReadStream(filepath).pipe(res);
     return;
   }
 
   // ── POST /api/bridge (legado) ─────────────────────────────────
-  if (req.method === 'POST' && req.url === '/api/bridge') {
+  if (req.method === 'POST' && pathname === '/api/bridge') {
     try {
       const { weservUrl } = JSON.parse((await readBody(req)).toString());
       if (!weservUrl) { res.writeHead(400); res.end(JSON.stringify({ error: 'weservUrl required' })); return; }
@@ -403,26 +456,22 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── Arquivos estáticos ────────────────────────────────────────
-  let filePath = req.url.split('?')[0];
+  let filePath = pathname;
   if (filePath === '/') filePath = '/index.html';
   filePath = path.join(__dirname, filePath);
   const ext = path.extname(filePath);
   fs.readFile(filePath, (err, data) => {
-    if (err) { res.writeHead(404); res.end('Not found'); return; }
+    if (err) { 
+      console.error(`[ERROR] Static file not found: ${filePath} (from pathname: ${pathname})`);
+      res.writeHead(404); 
+      res.end('Not found'); 
+      return; 
+    }
     res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
     res.end(data);
   });
 });
 
 server.listen(PORT, () => {
-  console.log('');
-  console.log('  ✅ Seleta Resizer rodando em:');
-  console.log(`     http://localhost:${PORT}`);
-  console.log('');
-  console.log('  Endpoints:');
-  console.log('    POST /api/processar   — inicia job completo (SSE)');
-  console.log('    GET  /api/progress/:id — stream de progresso (SSE)');
-  console.log('    POST /api/resize      — redimensionar imagem avulsa');
-  console.log('    POST /api/bridge      — legado (compatibilidade)');
-  console.log('');
+  console.log(`\n  ✅ Seleta Resizer rodando na porta ${PORT}\n`);
 });
