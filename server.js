@@ -2,6 +2,11 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+let sharp;
+try { sharp = require('sharp'); } catch (e) { console.warn('⚠️  sharp não instalado. Execute: npm install sharp'); }
+
+const TEMP_DIR = path.join(__dirname, 'temp');
+if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
 
 const PORT = 8080;
 const MIME = {
@@ -97,7 +102,106 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
+  // ── POST /api/resize ── Baixa imagem original + redimensiona para 1000x1000 ──
+  if (req.method === 'POST' && req.url === '/api/resize') {
+    try {
+      if (!sharp) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'sharp não instalado no servidor' }));
+        return;
+      }
+      const body = await readBody(req);
+      const { originalUrl } = JSON.parse(body.toString());
+      if (!originalUrl || !originalUrl.startsWith('http')) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'originalUrl inválida ou ausente' }));
+        return;
+      }
+
+      // 1) Baixar imagem original
+      const imgResp = await httpsGet(originalUrl);
+      if (imgResp.status !== 200) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Download falhou: HTTP ${imgResp.status}` }));
+        return;
+      }
+      const originalBuffer = imgResp.body;
+      if (!originalBuffer || originalBuffer.length < 512) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Imagem muito pequena: ${originalBuffer ? originalBuffer.length : 0} bytes` }));
+        return;
+      }
+
+      // 2) Validar magic bytes (JPEG ou PNG)
+      const header = originalBuffer.slice(0, 4).toString('hex');
+      const isJpeg = header.startsWith('ffd8ff');
+      const isPng  = header.startsWith('89504e47');
+      const isWebp = originalBuffer.slice(0, 4).toString('ascii') === 'RIFF';
+      if (!isJpeg && !isPng && !isWebp) {
+        res.writeHead(422, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Formato não suportado. Header: ${header}` }));
+        return;
+      }
+
+      // 3) Redimensionar para 1000x1000 (contain + fundo branco)
+      const resizedBuffer = await sharp(originalBuffer)
+        .resize(1000, 1000, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+        .jpeg({ quality: 95 })
+        .toBuffer();
+
+      // 4) Validar imagem gerada
+      const resizedMeta = await sharp(resizedBuffer).metadata();
+      if (resizedMeta.width !== 1000 || resizedMeta.height !== 1000) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `Dimensão inválida: ${resizedMeta.width}x${resizedMeta.height}` }));
+        return;
+      }
+
+      // 5) Salvar arquivo temporário
+      const filename = `resize_${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+      const filepath = path.join(TEMP_DIR, filename);
+      fs.writeFileSync(filepath, resizedBuffer);
+
+      // Limpeza automática após 10 minutos
+      setTimeout(() => { try { if (fs.existsSync(filepath)) fs.unlinkSync(filepath); } catch {} }, 10 * 60 * 1000);
+
+      const baseUrl = `https://app.marcaseleta.shop/resizer/temp/${filename}`;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ url: baseUrl, filename, width: 1000, height: 1000 }));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  // ── DELETE /api/temp/:filename ── Limpa arquivo temporário ──
+  if (req.method === 'DELETE' && req.url.startsWith('/api/temp/')) {
+    const filename = path.basename(req.url.replace('/api/temp/', ''));
+    const filepath = path.join(TEMP_DIR, filename);
+    try {
+      if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  // ── Servir arquivos da pasta /temp/ ──────────────────────────
+  if (req.method === 'GET' && req.url.startsWith('/temp/')) {
+    const filename = path.basename(req.url.split('?')[0]);
+    const filepath = path.join(TEMP_DIR, filename);
+    if (!fs.existsSync(filepath)) { res.writeHead(404); res.end('Not found'); return; }
+    res.writeHead(200, { 'Content-Type': 'image/jpeg' });
+    fs.createReadStream(filepath).pipe(res);
+    return;
+  }
+
   // ── POST /api/bridge ── Baixa do weserv + upload pro FreeImage ──
+
   if (req.method === 'POST' && req.url === '/api/bridge') {
     try {
       const body = await readBody(req);
