@@ -1,1685 +1,332 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Seleta Resizer â€” Redimensionador de Imagens</title>
-  <meta name="description"
-    content="Ferramenta interna da Marca Seleta para redimensionar imagens de produtos para 1000x1000 no AnyMarket." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seleta Resizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --bg: #0d0f14;
-      --surface: #14171f;
-      --card: #1a1e2a;
-      --border: #252a38;
-      --accent: #6c63ff;
-      --accent2: #a78bfa;
-      --success: #22c55e;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --text: #e8eaf0;
-      --muted: #7b82a0;
-      --radius: 14px;
-      --shadow: 0 8px 32px rgba(0, 0, 0, .45);
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 16px 80px;
-    }
-
-    /* Header */
-    header {
-      width: 100%;
-      max-width: 860px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    .logo-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      box-shadow: 0 0 24px rgba(108, 99, 255, .4);
-      flex-shrink: 0;
-    }
-
-    .header-text h1 {
-      font-size: 1.7rem;
-      font-weight: 800;
-      letter-spacing: -.5px;
-    }
-
-    .header-text h1 span {
-      color: var(--accent2);
-    }
-
-    .header-text p {
-      font-size: .85rem;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    /* Card */
-    .card {
-      width: 100%;
-      max-width: 860px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-title {
-      font-size: .7rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--accent2);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .card-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Form */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media(max-width:600px) {
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .field.full {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      font-size: .78rem;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .4px;
-    }
-
-    input,
-    textarea {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: .92rem;
-      padding: 12px 14px;
-      transition: border-color .2s, box-shadow .2s;
-      outline: none;
-      resize: vertical;
-    }
-
-    input:focus,
-    textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108, 99, 255, .18);
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: var(--muted);
-      opacity: .7;
-    }
-
-    .hint {
-      font-size: .74rem;
-      color: var(--muted);
-      margin-top: -4px;
-    }
-
-    /* Toggle */
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      cursor: pointer;
-      user-select: none;
-      transition: border-color .2s;
-    }
-
-    .toggle-row:hover {
-      border-color: var(--accent);
-    }
-
-    .toggle-switch {
-      width: 42px;
-      height: 24px;
-      background: var(--border);
-      border-radius: 99px;
-      position: relative;
-      transition: background .2s;
-      flex-shrink: 0;
-    }
-
-    .toggle-switch::after {
-      content: '';
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #fff;
-      transition: transform .2s;
-    }
-
-    .toggle-row.active .toggle-switch {
-      background: var(--accent);
-    }
-
-    .toggle-row.active .toggle-switch::after {
-      transform: translateX(18px);
-    }
-
-    .toggle-label {
-      font-size: .88rem;
-      font-weight: 500;
-    }
-
-    .toggle-sub {
-      font-size: .74rem;
-      color: var(--muted);
-      margin-top: 1px;
-    }
-
-    /* Button */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 14px 28px;
-      border: none;
-      border-radius: 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: .95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .2s;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(108, 99, 255, .35);
-    }
-
-    .btn-primary:hover {
-      filter: brightness(1.12);
-      transform: translateY(-1px);
-    }
-
-    .btn-primary:active {
-      transform: translateY(0);
-      filter: brightness(1);
-    }
-
-    .btn-primary:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-sm {
-      padding: 8px 16px;
-      font-size: .82rem;
-    }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, .15);
-      color: var(--danger);
-      border: 1px solid rgba(239, 68, 68, .3);
-    }
-
-    .btn-danger:hover {
-      background: rgba(239, 68, 68, .25);
-    }
-
-    .actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-top: 24px;
-    }
-
-    /* Progress */
-    #progressWrap {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: .82rem;
-    }
-
-    .progress-track {
-      height: 8px;
-      background: var(--surface);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: 99px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width .4s ease;
-      width: 0%;
-    }
-
-    .progress-stats {
-      display: flex;
-      gap: 20px;
-      font-size: .78rem;
-      color: var(--muted);
-    }
-
-    .stat-val {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    /* Log */
-    #logPanel {
-      display: none;
-    }
-
-    .log-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 380px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .log-list::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    .log-list::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 99px;
-    }
-
-    .log-item {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: .8rem;
-      background: var(--surface);
-      border-left: 3px solid var(--border);
-      animation: slideIn .2s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .log-item.ok {
-      border-left-color: var(--success);
-    }
-
-    .log-item.err {
-      border-left-color: var(--danger);
-      background: rgba(239, 68, 68, .06);
-    }
-
-    .log-item.skip {
-      border-left-color: var(--warn);
-    }
-
-    .log-item.info {
-      border-left-color: var(--accent);
-    }
-
-    .log-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .log-msg {
-      flex: 1;
-      line-height: 1.5;
-      color: var(--text);
-    }
-
-    .log-msg strong {
-      color: var(--accent2);
-      font-weight: 600;
-    }
-
-    .log-time {
-      font-size: .7rem;
-      color: var(--muted);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    /* Summary */
-    #summaryPanel {
-      display: none;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-    }
-
-    .stat-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .stat-box .s-label {
-      font-size: .72rem;
-      color: var(--muted);
-      font-weight: 600;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-    }
-
-    .stat-box .s-val {
-      font-size: 1.8rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .stat-box.ok .s-val {
-      color: var(--success);
-    }
-
-    .stat-box.err .s-val {
-      color: var(--danger);
-    }
-
-    .stat-box.warn .s-val {
-      color: var(--warn);
-    }
-
-    .stat-box.info .s-val {
-      color: var(--accent2);
-    }
-
-    /* Badge */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 99px;
-      font-size: .72rem;
-      font-weight: 600;
-    }
-
-    .badge-idle {
-      background: rgba(123, 130, 160, .12);
-      color: var(--muted);
-    }
-
-    .badge-running {
-      background: rgba(108, 99, 255, .18);
-      color: var(--accent2);
-    }
-
-    .badge-done {
-      background: rgba(34, 197, 94, .15);
-      color: var(--success);
-    }
-
-    .badge-error {
-      background: rgba(239, 68, 68, .15);
-      color: var(--danger);
-    }
-
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .status-label {
-      font-size: .82rem;
-      color: var(--muted);
-    }
-
-    /* Toast */
-    #toast {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 20px;
-      font-size: .85rem;
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transform: translateY(80px);
-      opacity: 0;
-      transition: all .3s cubic-bezier(.17, .67, .3, 1.2);
-      z-index: 999;
-      max-width: 360px;
-    }
-
-    #toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0a0c10;--surface:#12151c;--card:#181c27;--border:#262c3d;--accent:#7c6ef5;--accent2:#a78bfa;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--text:#e8eaf0;--muted:#6b7394;--radius:12px}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 80px}
+    header{width:100%;max-width:780px;display:flex;align-items:center;gap:14px;margin-bottom:32px}
+    .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px rgba(124,110,245,.35);flex-shrink:0}
+    header h1{font-size:1.5rem;font-weight:800;letter-spacing:-.4px}
+    header h1 b{color:var(--accent2);font-weight:800}
+    header p{font-size:.8rem;color:var(--muted);margin-top:2px}
+    .card{width:100%;max-width:780px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:16px}
+    .card-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);margin-bottom:18px}
+    .row{display:flex;gap:14px;margin-bottom:14px}
+    .row>*{flex:1}
+    label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:5px}
+    input,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font:inherit;font-size:.88rem;transition:border .2s}
+    input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+    textarea{resize:vertical;min-height:80px;font-size:.82rem}
+    .hint{font-size:.7rem;color:var(--muted);margin-top:3px}
+    .toggle-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;user-select:none;transition:border .2s}
+    .toggle-row:hover{border-color:var(--accent)}
+    .toggle-track{width:40px;height:22px;border-radius:11px;background:#333;position:relative;transition:background .2s;flex-shrink:0}
+    .toggle-track.on{background:var(--accent)}
+    .toggle-track::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
+    .toggle-track.on::after{transform:translateX(18px)}
+    .toggle-label{font-size:.85rem;font-weight:500}
+    .toggle-hint{font-size:.72rem;color:var(--muted)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font:inherit;font-weight:600;font-size:.9rem;border:none;cursor:pointer;transition:all .2s}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 16px rgba(124,110,245,.35)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,110,245,.5)}
+    .btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+    .btn-danger:hover{background:rgba(239,68,68,.25)}
+    .btn-outline{background:rgba(124,110,245,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.3)}
+    .btn-outline:hover{background:rgba(124,110,245,.2)}
+    .btn-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600}
+    .badge-running{background:rgba(124,110,245,.2);color:var(--accent2)}
+    .badge-done{background:rgba(34,197,94,.15);color:var(--green)}
+    .badge-error{background:rgba(239,68,68,.15);color:var(--red)}
+    .progress-bar{width:100%;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;margin:12px 0}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;width:0%;transition:width .4s}
+    .progress-info{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
+    .stats{display:flex;gap:20px;margin-top:10px}
+    .stat{text-align:center}
+    .stat-val{font-size:1.3rem;font-weight:700}
+    .stat-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .stat-ok .stat-val{color:var(--green)}
+    .stat-err .stat-val{color:var(--red)}
+    .stat-skip .stat-val{color:var(--amber)}
+    .log-wrap{max-height:320px;overflow-y:auto;background:var(--surface);border-radius:8px;padding:8px;margin-top:12px}
+    .log-wrap::-webkit-scrollbar{width:5px}
+    .log-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    .log-item{display:flex;align-items:flex-start;gap:8px;padding:5px 8px;border-radius:6px;font-size:.78rem;line-height:1.4;animation:fadeIn .2s}
+    .log-item.ok{color:var(--green)}.log-item.err{color:var(--red)}.log-item.skip{color:var(--amber)}
+    .log-icon{flex-shrink:0;width:16px;text-align:center}
+    .log-msg{flex:1;word-break:break-word}
+    .log-time{flex-shrink:0;font-size:.65rem;color:var(--muted);margin-left:auto}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+    .sum-box{text-align:center;padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border)}
+    .sum-box .val{font-size:1.6rem;font-weight:800}
+    .sum-box .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-top:2px}
+    .sum-ok .val{color:var(--green)}.sum-err .val{color:var(--red)}.sum-skip .val{color:var(--amber)}
+    .hidden{display:none!important}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);padding:12px 20px;border-radius:10px;display:flex;gap:10px;align-items:center;font-size:.85rem;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .3s;z-index:99}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    @media(max-width:600px){.row{flex-direction:column}.summary{grid-template-columns:repeat(2,1fr)}.stats{flex-wrap:wrap}}
   </style>
 </head>
-
 <body>
 
   <header>
-    <div class="logo-wrap">ðŸ–¼ï¸</div>
-    <div class="header-text">
-      <h1>Seleta <span>Resizer</span></h1>
-      <p>Redimensionamento automÃ¡tico de imagens para 1000Ã—1000 px no AnyMarket</p>
+    <div class="logo">&#x1F5BC;</div>
+    <div>
+      <h1>Seleta <b>Resizer</b></h1>
+      <p>Redimensionamento de imagens para 1000x1000 px no AnyMarket</p>
     </div>
   </header>
 
   <!-- Config -->
-  <div class="card" id="configCard">
-    <div class="card-title">âš™ï¸ ConfiguraÃ§Ã£o</div>
-    <div class="form-grid">
-
-      <div class="field">
-        <label for="token">Token AnyMarket *</label>
-        <input type="text" id="token" placeholder="gumgaToken da conta" />
-        <span class="hint">Token de autenticaÃ§Ã£o da API (gumgaToken)</span>
-      </div>
-
-      <div class="field">
-        <label for="oi">Organization ID (OI)</label>
-        <input type="text" id="oi" placeholder="ex: 259064086." />
-        <span class="hint">Usado apenas no modo geral (sem SKUs)</span>
-      </div>
-
-      <div class="field full">
-        <label for="workers">Tarefas SimultÃ¢neas (Workers)</label>
-        <input type="number" id="workers" min="1" max="10" value="3" />
-        <span class="hint">Velocidade: quantas fotos sÃ£o convertidas ao mesmo tempo. MÃ¡ximo permitido: 10.</span>
-      </div>
-
-      <div class="field full">
-        <label for="skus">SKUs dos produtos *</label>
-        <textarea id="skus" rows="4"
-          placeholder="Informe os cÃ³digos dos produtos (id_in_client), um por linha:&#10;SKU001&#10;SKU002&#10;&#10;Deixe vazio para processar todos da conta."></textarea>
-        <span class="hint">CÃ³digos internos dos produtos (id_in_client). Deixe vazio para processar todos.</span>
-      </div>
-
-      <div class="field full">
-        <div class="toggle-row active" id="toggleDeleteOld" onclick="toggleDelete()">
-          <div class="toggle-switch"></div>
-          <div>
-            <div class="toggle-label">ðŸ—‘ï¸ Deletar foto antiga apÃ³s upload</div>
-            <div class="toggle-sub">Recomendado: mantÃ©m o catÃ¡logo limpo.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="field full">
-        <div class="toggle-row" id="toggleDryRun" onclick="toggleDry()">
-          <div class="toggle-switch"></div>
-          <div>
-            <div class="toggle-label">ðŸ§ª Modo simulaÃ§Ã£o (Dry Run)</div>
-            <div class="toggle-sub">Lista as fotos que seriam processadas sem fazer nenhuma alteraÃ§Ã£o real.</div>
-          </div>
-        </div>
-      </div>
-
+  <div class="card">
+    <div class="card-title">Configuracao</div>
+    <div class="row">
+      <div><label for="token">Token AnyMarket *</label><input id="token" type="password" placeholder="gumgaToken da conta"><div class="hint">Token de autenticacao da API (gumgaToken)</div></div>
+      <div><label for="oi">Organization ID (OI) *</label><input id="oi" placeholder="ex: 259064086."><div class="hint">Identificador da conta no AnyMarket</div></div>
     </div>
+    <div>
+      <label for="skus">SKUs dos produtos (opcional)</label>
+      <textarea id="skus" rows="3" placeholder="Informe os codigos dos produtos, um por linha. Deixe vazio para processar todos."></textarea>
+      <div class="hint">Codigos internos dos produtos (id_in_client). Deixe vazio para processar todos.</div>
+    </div>
+  </div>
 
+  <!-- Options -->
+  <div class="card">
+    <div class="toggle-row" onclick="toggleDelete()">
+      <div class="toggle-track on" id="toggleDeleteOld"></div>
+      <div>
+        <div class="toggle-label">Deletar foto antiga apos upload</div>
+        <div class="toggle-hint">Recomendado: mantem o catalogo limpo.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="card">
     <div class="actions">
-      <button class="btn btn-primary" id="startBtn" onclick="startProcess()">â–¶ Iniciar Processamento</button>
-      <button class="btn btn-sm btn-danger" id="cancelBtn" onclick="cancelProcess()" style="display:none">âœ•
-        Cancelar</button>
+      <button class="btn btn-primary" id="startBtn" onclick="startProcess()">Iniciar Processamento</button>
+      <button class="btn btn-danger hidden" id="cancelBtn" onclick="cancelProcess()">Cancelar</button>
+      <button class="btn btn-outline hidden" id="exportBtn" onclick="exportSpreadsheet()">Exportar CSV</button>
+      <button class="btn btn-amber hidden" id="rollbackBtn" onclick="startRollback()">Desfazer tudo</button>
     </div>
   </div>
 
   <!-- Progress -->
-  <div class="card" id="progressCard" style="display:none">
-    <div class="card-title">ðŸ“Š Progresso</div>
-    <div class="status-row">
-      <span class="status-label">Status:</span>
-      <span class="badge badge-idle" id="statusBadge">Aguardando</span>
+  <div class="card hidden" id="progressCard">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span class="card-title" style="margin:0">Progresso</span>
+      <span class="badge badge-running" id="statusBadge">Aguardando</span>
     </div>
     <div id="progressWrap">
-      <div class="progress-header">
-        <span id="progressLabel">Processando...</span>
-        <span id="progressPct" style="font-weight:700;color:var(--accent2)">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <div class="progress-stats">
-        <span>Total: <span class="stat-val" id="statTotal">0</span></span>
-        <span>âœ… OK: <span class="stat-val" id="statOk">0</span></span>
-        <span>â­ï¸ Puladas: <span class="stat-val" id="statSkip">0</span></span>
-        <span>âŒ Erros: <span class="stat-val" id="statErr">0</span></span>
-      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-info"><span id="progressLabel">Aguardando...</span><span id="progressPct">0%</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">Total</div></div>
+      <div class="stat stat-ok"><div class="stat-val" id="statOk">0</div><div class="stat-lbl">Sucesso</div></div>
+      <div class="stat stat-skip"><div class="stat-val" id="statSkip">0</div><div class="stat-lbl">Ignoradas</div></div>
+      <div class="stat stat-err"><div class="stat-val" id="statErr">0</div><div class="stat-lbl">Erros</div></div>
     </div>
   </div>
 
   <!-- Summary -->
-  <div class="card" id="summaryPanel">
-    <div class="card-title">ðŸ Resultado Final</div>
-    <div class="summary-grid">
-      <div class="stat-box info"><span class="s-label">Total de Fotos</span><span class="s-val" id="sumTotal">0</span>
-      </div>
-      <div class="stat-box ok"> <span class="s-label">Processadas</span> <span class="s-val" id="sumOk">0</span></div>
-      <div class="stat-box warn"><span class="s-label">Puladas</span> <span class="s-val" id="sumSkip">0</span></div>
-      <div class="stat-box err"> <span class="s-label">Erros</span> <span class="s-val" id="sumErr">0</span></div>
+  <div class="card hidden" id="summaryPanel">
+    <div class="card-title">Resumo Final</div>
+    <div class="summary">
+      <div class="sum-box"><div class="val" id="sumTotal">0</div><div class="lbl">Total</div></div>
+      <div class="sum-box sum-ok"><div class="val" id="sumOk">0</div><div class="lbl">Sucesso</div></div>
+      <div class="sum-box sum-skip"><div class="val" id="sumSkip">0</div><div class="lbl">Ignoradas</div></div>
+      <div class="sum-box sum-err"><div class="val" id="sumErr">0</div><div class="lbl">Erros</div></div>
     </div>
-    <div class="actions" style="margin-top:20px;flex-wrap:wrap;gap:12px">
-      <button class="btn btn-primary" onclick="resetAll()">ðŸ”„ Nova ExecuÃ§Ã£o</button>
-      <button class="btn btn-sm" id="exportBtn" onclick="exportSpreadsheet()"
-        style="display:none;background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);">
-        ðŸ“Š Exportar Planilha CSV
-      </button>
-      <button class="btn btn-sm btn-danger" id="rollbackBtn" onclick="startRollback()" style="display:none">
-        â†© Desfazer tudo (restaurar fotos originais)
-      </button>
-    </div>
-    <p id="rollbackNote" style="display:none;font-size:.78rem;color:var(--muted);margin-top:12px">
-      âš ï¸ O desfazer irÃ¡ deletar as foâ€‹tos novas e restaurar as originais como estavam antes.
-    </p>
+    <div class="hint hidden" id="rollbackNote" style="margin-top:12px;color:var(--amber)">Voce pode desfazer as alteracoes clicando em "Desfazer tudo".</div>
   </div>
 
   <!-- Log -->
-  <div class="card" id="logPanel">
-    <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
-      <span>ðŸ“‹ Log de ExecuÃ§Ã£o</span>
-      <button onclick="clearLog()"
-        style="background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.75rem;padding:5px 12px;border-radius:7px;cursor:pointer;">Limpar</button>
-    </div>
-    <div class="log-list" id="logList"></div>
+  <div class="card hidden" id="logPanel">
+    <div class="card-title">Log de Atividade</div>
+    <div class="log-wrap" id="logList"></div>
   </div>
 
-  <div id="toast"></div>
+  <div class="toast" id="toast"></div>
 
   <script>
-    // â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let deleteOld = true;
-    let running   = false;
-    let stats     = { total: 0, ok: 0, skip: 0, err: 0 };
-    let rollbackLog = [];
-    let reportLog   = [];
-    let activeSSE   = null;
+    let deleteOld=true,running=false,activeSSE=null;
+    let stats={total:0,ok:0,skip:0,err:0},rollbackLog=[],reportLog=[];
 
-    const MAX_LOG_ITEMS = 300;
-
-    // â”€â”€â”€ localStorage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    window.addEventListener('DOMContentLoaded', () => {
-      const t = localStorage.getItem('seleta_token');
-      const o = localStorage.getItem('seleta_oi');
-      const w = localStorage.getItem('seleta_workers');
-      if (t) document.getElementById('token').value = t;
-      if (o) document.getElementById('oi').value = o;
-      if (w) document.getElementById('workers').value = w;
+    window.addEventListener('DOMContentLoaded',()=>{
+      const t=localStorage.getItem('seleta_token'),o=localStorage.getItem('seleta_oi');
+      if(t)document.getElementById('token').value=t;
+      if(o)document.getElementById('oi').value=o;
     });
-
-    function savePrefs() {
-      localStorage.setItem('seleta_token',   document.getElementById('token').value.trim());
-      localStorage.setItem('seleta_oi',      document.getElementById('oi').value.trim());
-      localStorage.setItem('seleta_workers', document.getElementById('workers')?.value?.trim() ?? '3');
+    function savePrefs(){
+      localStorage.setItem('seleta_token',document.getElementById('token').value.trim());
+      localStorage.setItem('seleta_oi',document.getElementById('oi').value.trim());
     }
-
-    // â”€â”€â”€ Sanitize â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function esc(str) {
-      return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+    function toggleDelete(){
+      if(running)return;deleteOld=!deleteOld;
+      document.getElementById('toggleDeleteOld').classList.toggle('on',deleteOld);
     }
-
-    // â”€â”€â”€ Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function toggleDelete() {
-      if (running) return;
-      deleteOld = !deleteOld;
-      document.getElementById('toggleDeleteOld').classList.toggle('active', deleteOld);
+    let toastT=null;
+    function showToast(icon,msg){
+      const t=document.getElementById('toast');
+      t.innerHTML=`<span>${icon}</span><span>${esc(msg)}</span>`;
+      t.classList.add('show');clearTimeout(toastT);
+      toastT=setTimeout(()=>t.classList.remove('show'),3500);
     }
-    function toggleDry() { /* modo simulaÃ§Ã£o removido â€” processamento Ã© server-side */ }
-
-    // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let toastTimer = null;
-    function showToast(icon, msg) {
-      const t = document.getElementById('toast');
-      t.innerHTML = `<span style="font-size:1.1rem">${icon}</span><span>${esc(msg)}</span>`;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    const TP={info:'info',ok:'ok',err:'err',skip:'skip',error:'err'};
+    const IC={info:'\u23F3',ok:'\u2705',err:'\u274C',skip:'\u26A0\uFE0F'};
+    function addLog(tp,msg){
+      show('logPanel');
+      const list=document.getElementById('logList');
+      while(list.children.length>=300)list.removeChild(list.firstChild);
+      const now=new Date().toLocaleTimeString('pt-BR');
+      const type=TP[tp]||'info';
+      const d=document.createElement('div');
+      d.className=`log-item ${type}`;
+      d.innerHTML=`<span class="log-icon">${IC[type]||'\u23F3'}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
+      list.appendChild(d);list.scrollTop=list.scrollHeight;
     }
-
-    // â”€â”€â”€ Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    const TYPE_MAP = { info:'info', ok:'ok', err:'err', skip:'skip', error:'err' };
-    const ICON_MAP = { info:'â³', ok:'âœ…', err:'âŒ', skip:'âš ï¸' };
-
-    function addLog(tp, msg) {
-      document.getElementById('logPanel').style.display = 'block';
-      const list = document.getElementById('logList');
-      while (list.children.length >= MAX_LOG_ITEMS) list.removeChild(list.firstChild);
-      const now  = new Date().toLocaleTimeString('pt-BR');
-      const type = TYPE_MAP[tp] || 'info';
-      const icon = ICON_MAP[type] || 'â³';
-      const item = document.createElement('div');
-      item.className = `log-item ${type}`;
-      item.innerHTML = `<span class="log-icon">${icon}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
-      list.appendChild(item);
-      list.scrollTop = list.scrollHeight;
+    function show(id){document.getElementById(id).classList.remove('hidden')}
+    function hide(id){document.getElementById(id).classList.add('hidden')}
+    function setProgress(done,total){
+      const p=total>0?Math.round(done/total*100):0;
+      document.getElementById('progressFill').style.width=p+'%';
+      document.getElementById('progressPct').textContent=p+'%';
+      document.getElementById('progressLabel').textContent=`Processando ${done} de ${total}`;
+      document.getElementById('statTotal').textContent=total;
+      document.getElementById('statOk').textContent=stats.ok;
+      document.getElementById('statSkip').textContent=stats.skip;
+      document.getElementById('statErr').textContent=stats.err;
     }
-    function clearLog() { document.getElementById('logList').innerHTML = ''; }
-
-    // â”€â”€â”€ Progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function setProgress(done, total) {
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      document.getElementById('progressFill').style.width = pct + '%';
-      document.getElementById('progressPct').textContent  = pct + '%';
-      document.getElementById('progressLabel').textContent = `Processando ${done} de ${total}`;
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statOk').textContent    = stats.ok;
-      document.getElementById('statSkip').textContent  = stats.skip;
-      document.getElementById('statErr').textContent   = stats.err;
+    function setStatus(type,text){
+      const b=document.getElementById('statusBadge');
+      b.className=`badge badge-${type}`;b.textContent=text;
     }
-    function setStatus(type, text) {
-      const b = document.getElementById('statusBadge');
-      b.className   = `badge badge-${type}`;
-      b.textContent = text;
+    function resetAll(){
+      running=false;if(activeSSE){activeSSE.close();activeSSE=null}
+      stats={total:0,ok:0,skip:0,err:0};reportLog=[];rollbackLog=[];
+      ['progressCard','summaryPanel','logPanel'].forEach(hide);
+      show('startBtn');hide('cancelBtn');hide('exportBtn');hide('rollbackBtn');hide('rollbackNote');
+      document.getElementById('logList').innerHTML='';setProgress(0,0);
     }
-
-    // â”€â”€â”€ Reset / Cancel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function resetAll() {
-      running = false;
-      if (activeSSE) { activeSSE.close(); activeSSE = null; }
-      stats = { total:0, ok:0, skip:0, err:0 };
-      reportLog = []; rollbackLog = [];
-      ['progressCard','summaryPanel','logPanel'].forEach(id => document.getElementById(id).style.display = 'none');
-      document.getElementById('startBtn').style.display  = 'inline-flex';
-      document.getElementById('cancelBtn').style.display = 'none';
-      document.getElementById('exportBtn').style.display = 'none';
-      document.getElementById('rollbackBtn').style.display  = 'none';
-      document.getElementById('rollbackNote').style.display = 'none';
-      document.getElementById('logList').innerHTML = '';
-      setProgress(0, 0);
+    function cancelProcess(){
+      if(activeSSE){activeSSE.close();activeSSE=null}
+      running=false;addLog('skip','Processamento cancelado pelo usuario.');
+      setStatus('error','Cancelado');finalize(true);
     }
-    function cancelProcess() {
-      if (activeSSE) { activeSSE.close(); activeSSE = null; }
-      running = false;
-      addLog('skip', 'â›” Processamento cancelado pelo usuÃ¡rio.');
-      setStatus('error', 'â›” Cancelado');
-      finalize(true);
-    }
-
-    // â”€â”€â”€ SSE listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function connectSSE(jobId) {
-      const basePath = window.location.pathname.replace(/\/$/, '');
-      const url = `${basePath}/api/progress/${jobId}`;
-      const es  = new EventSource(url);
-      activeSSE = es;
-
-      es.onmessage = (e) => {
-        let data;
-        try { data = JSON.parse(e.data); } catch { return; }
-
-        if (data.event === 'log') {
-          addLog(data.tp || 'info', data.msg);
-        }
-
-        else if (data.event === 'progress') {
-          stats.total = data.total;
-          stats.ok    = data.ok;
-          stats.err   = data.erros;
-          setProgress(data.done, data.total);
-        }
-
-        else if (data.event === 'complete') {
-          es.close(); activeSSE = null;
-          const results = data.results || [];
-
-          // popular rollbackLog e reportLog
-          results.forEach(r => {
-            reportLog.push({
-              sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto,
-              oldUrl: r.url_original, newPhotoId: r._newPhotoId || '',
-              newUrl: r.nova_url || '', status: r.status,
-              motivo: r.motivo_erro || ''
-            });
-            if (r.status === 'SUCESSO' && r._newPhotoId) {
-              rollbackLog.push({
-                prodId: r.id_produto, oldPhotoId: r.id_foto,
-                restoreUrl: r.url_original, newPhotoId: r._newPhotoId,
-                index: r._idx ?? 0, isMain: r._isMain ?? false,
-                wasDeleted: r._oldDeleted ?? false
-              });
-            }
+    function connectSSE(jobId){
+      const bp=window.location.pathname.replace(/\/$/,'');
+      const es=new EventSource(`${bp}/api/progress/${jobId}`);
+      activeSSE=es;
+      es.onmessage=(e)=>{
+        let d;try{d=JSON.parse(e.data)}catch{return}
+        if(d.event==='log')addLog(d.tp||'info',d.msg);
+        else if(d.event==='progress'){
+          stats.total=d.total;stats.ok=d.ok;stats.err=d.erros;
+          setProgress(d.done,d.total);
+        }else if(d.event==='complete'){
+          es.close();activeSSE=null;
+          const res=d.results||[];
+          res.forEach(r=>{
+            reportLog.push({sku:r.sku,prodId:r.id_produto,oldPhotoId:r.id_foto,oldUrl:r.url_original,newPhotoId:r._newPhotoId||'',newUrl:r.nova_url||'',status:r.status,motivo:r.motivo_erro||''});
+            if(r.status==='SUCESSO'&&r._newPhotoId)rollbackLog.push({prodId:r.id_produto,oldPhotoId:r.id_foto,restoreUrl:r.url_original,newPhotoId:r._newPhotoId,index:r._idx??0,isMain:r._isMain??false,wasDeleted:r._oldDeleted??false});
           });
-
-          stats.total = data.total;
-          stats.ok    = data.ok;
-          stats.err   = data.erros;
-          stats.skip  = 0;
-          setProgress(data.total, data.total);
-          setStatus('done', 'âœ… ConcluÃ­do');
-          addLog('ok', `ðŸ Finalizado â€” ${data.ok} sucesso(s), ${data.erros} erro(s).`);
+          stats.total=d.total;stats.ok=d.ok;stats.err=d.erros;stats.skip=0;
+          setProgress(d.total,d.total);setStatus('done','Concluido');
+          addLog('ok',`Finalizado: ${d.ok} sucesso(s), ${d.erros} erro(s).`);
           finalize(false);
-        }
-
-        else if (data.event === 'error') {
-          es.close(); activeSSE = null;
-          addLog('err', `âŒ Erro fatal: ${data.msg}`);
-          setStatus('error', 'âŒ Erro');
-          showToast('âŒ', data.msg);
-          finalize(false);
+        }else if(d.event==='error'){
+          es.close();activeSSE=null;addLog('err',`Erro fatal: ${d.msg}`);
+          setStatus('error','Erro');showToast('\u274C',d.msg);finalize(false);
         }
       };
-
-      es.onerror = () => {
-        if (!activeSSE) return;
-        addLog('err', 'âŒ ConexÃ£o SSE perdida.');
-        es.close(); activeSSE = null;
-        setStatus('error', 'âŒ ConexÃ£o perdida');
-        finalize(false);
+      es.onerror=()=>{
+        if(!activeSSE)return;addLog('err','Conexao SSE perdida.');
+        es.close();activeSSE=null;setStatus('error','Conexao perdida');finalize(false);
       };
     }
-
-    // â”€â”€â”€ MAIN PROCESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function startProcess() {
-      const token  = document.getElementById('token').value.trim();
-      const oi     = document.getElementById('oi').value.trim();
-      const skuRaw = document.getElementById('skus').value.trim();
-
-      if (!token) { showToast('âš ï¸', 'Preencha o Token AnyMarket antes de iniciar.'); return; }
-      if (!oi)    { showToast('âš ï¸', 'Preencha o OI (Organization ID).'); return; }
-
-      savePrefs();
-      running = true;
-      stats   = { total:0, ok:0, skip:0, err:0 };
-      rollbackLog = []; reportLog = [];
-
-      document.getElementById('progressCard').style.display  = 'block';
-      document.getElementById('progressWrap').style.display  = 'flex';
-      document.getElementById('summaryPanel').style.display  = 'none';
-      document.getElementById('startBtn').style.display      = 'none';
-      document.getElementById('cancelBtn').style.display     = 'inline-flex';
-      setStatus('running', 'â³ Executando');
-      clearLog();
-
-      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-      addLog('info', `ðŸš€ Iniciando â€” OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'}`);
-
-      try {
-        const basePath = window.location.pathname.replace(/\/$/, '');
-        const resp = await fetch(`${basePath}/api/processar`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ oi, token, skus: skuList, deleteOld })
-        });
-
-        const json = await resp.json();
-        if (!resp.ok || !json.ok) {
-          throw new Error(json.error || `Erro ${resp.status}`);
-        }
-
-        addLog('info', `ðŸ”— Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
+    async function startProcess(){
+      const token=document.getElementById('token').value.trim();
+      const oi=document.getElementById('oi').value.trim();
+      const skuRaw=document.getElementById('skus').value.trim();
+      if(!token){showToast('\u26A0\uFE0F','Preencha o Token AnyMarket.');return}
+      if(!oi){showToast('\u26A0\uFE0F','Preencha o OI.');return}
+      savePrefs();running=true;stats={total:0,ok:0,skip:0,err:0};rollbackLog=[];reportLog=[];
+      show('progressCard');hide('summaryPanel');hide('startBtn');show('cancelBtn');
+      setStatus('running','Executando');document.getElementById('logList').innerHTML='';
+      const skuList=skuRaw?skuRaw.split('\n').map(s=>s.trim()).filter(Boolean):[];
+      addLog('info',`Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length?` | ${skuList.length} SKU(s)`:' | todos os produtos'}`);
+      try{
+        const bp=window.location.pathname.replace(/\/$/,'');
+        const resp=await fetch(`${bp}/api/processar`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oi,token,skus:skuList,deleteOld})});
+        const json=await resp.json();
+        if(!resp.ok||!json.ok)throw new Error(json.error||`Erro ${resp.status}`);
+        addLog('info',`Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
         connectSSE(json.jobId);
-
-      } catch (err) {
-        addLog('err', `âŒ ${esc(err.message)}`);
-        setStatus('error', 'âŒ Erro');
-        showToast('âŒ', err.message);
-        finalize(false);
+      }catch(err){
+        addLog('err',esc(err.message));setStatus('error','Erro');showToast('\u274C',err.message);finalize(false);
       }
     }
-
-    function finalize(wasCancelled) {
-      running = false;
-      document.getElementById('startBtn').style.display  = 'inline-flex';
-      document.getElementById('cancelBtn').style.display = 'none';
-      document.getElementById('summaryPanel').style.display = 'block';
-      document.getElementById('sumTotal').textContent = stats.total;
-      document.getElementById('sumOk').textContent    = stats.ok;
-      document.getElementById('sumSkip').textContent  = stats.skip;
-      document.getElementById('sumErr').textContent   = stats.err;
-
-      if (wasCancelled) {
-        showToast('â›”', `Cancelado. ${stats.ok} foto(s) processadas.`);
-      } else if (stats.err === 0 && stats.ok > 0) {
-        showToast('ðŸŽ‰', `${stats.ok} foto(s) processadas com sucesso!`);
-      } else if (stats.err > 0) {
-        showToast('âš ï¸', `ConcluÃ­do com ${stats.err} erro(s). Veja o log.`);
+    function finalize(cancelled){
+      running=false;show('startBtn');hide('cancelBtn');show('summaryPanel');
+      document.getElementById('sumTotal').textContent=stats.total;
+      document.getElementById('sumOk').textContent=stats.ok;
+      document.getElementById('sumSkip').textContent=stats.skip;
+      document.getElementById('sumErr').textContent=stats.err;
+      if(cancelled)showToast('\u26D4',`Cancelado. ${stats.ok} foto(s) processadas.`);
+      else if(stats.err===0&&stats.ok>0)showToast('\uD83C\uDF89',`${stats.ok} foto(s) processadas com sucesso!`);
+      else if(stats.err>0)showToast('\u26A0\uFE0F',`Concluido com ${stats.err} erro(s).`);
+      if(rollbackLog.length>0){show('rollbackBtn');show('rollbackNote')}
+      if(reportLog.length>0)show('exportBtn');
+    }
+    function exportSpreadsheet(){
+      if(!reportLog.length){showToast('\u2139\uFE0F','Nenhum dado.');return}
+      const BOM='\uFEFF';
+      const h=['SKU','Product ID','Photo ID Antigo','URL Antiga','Photo ID Novo','URL Nova','Status','Motivo'];
+      const rows=reportLog.map(r=>[r.sku,r.prodId,r.oldPhotoId,r.oldUrl,r.newPhotoId,r.newUrl,r.status,r.motivo].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';'));
+      const csv=BOM+[h.map(x=>`"${x}"`).join(';'),...rows].join('\n');
+      const n=new Date();const ts=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}`;
+      const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+      a.download=`seleta_resizer_${ts}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),200);
+      showToast('\uD83D\uDCCA',`Planilha exportada: ${reportLog.length} linha(s).`);
+    }
+    let rbPend=false,rbTimer=null;
+    async function startRollback(){
+      const token=document.getElementById('token').value.trim();
+      if(!token){showToast('\u26A0\uFE0F','Token necessario.');return}
+      if(!rollbackLog.length){showToast('\u2139\uFE0F','Nada a desfazer.');return}
+      if(!rbPend){
+        rbPend=true;const btn=document.getElementById('rollbackBtn');
+        btn.style.cssText='background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.6);color:#f59e0b';
+        btn.textContent=`Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
+        rbTimer=setTimeout(()=>{rbPend=false;btn.style.cssText='';btn.textContent='Desfazer tudo'},5000);return;
       }
-
-      if (rollbackLog.length > 0) {
-        document.getElementById('rollbackBtn').style.display  = 'inline-flex';
-        document.getElementById('rollbackNote').style.display = 'block';
+      clearTimeout(rbTimer);rbPend=false;
+      const btn=document.getElementById('rollbackBtn');btn.disabled=true;btn.textContent='Desfazendo...';
+      hide('rollbackNote');document.getElementById('logList').innerHTML='';
+      addLog('info',`Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
+      let ok=0,er=0;
+      for(const e of rollbackLog){
+        addLog('info',`Produto <strong>${esc(e.prodId)}</strong> \u2014 foto <strong>${esc(e.oldPhotoId)}</strong>`);
+        try{
+          if(e.newPhotoId){const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images/${e.newPhotoId}`,{method:'DELETE',headers:{gumgaToken:token}});if(r.ok||r.status===204)addLog('ok',`Foto nova ${esc(e.newPhotoId)} removida.`)}
+          if(e.wasDeleted&&e.restoreUrl){const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`,{method:'POST',headers:{gumgaToken:token,'Content-Type':'application/json'},body:JSON.stringify({url:e.restoreUrl,index:e.index,main:false})});const d=await r.json().catch(()=>({}));if(d.id)addLog('ok',`Foto original restaurada: ${esc(d.id)}`);else addLog('err','Falha ao restaurar')}
+          ok++;
+        }catch(x){addLog('err',esc(x.message));er++}
+        await new Promise(r=>setTimeout(r,800));
       }
-      if (reportLog.length > 0) {
-        document.getElementById('exportBtn').style.display = 'inline-flex';
-      }
-    }
-
-    // â”€â”€â”€ EXPORT CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function exportSpreadsheet() {
-      if (reportLog.length === 0) { showToast('â„¹ï¸', 'Nenhum dado para exportar.'); return; }
-      const BOM = '\uFEFF';
-      const headers = ['SKU','Product ID','Photo ID (Antigo)','URL Antiga','Photo ID (Novo)','URL Nova','Status','Motivo Erro'];
-      const rows = reportLog.map(r =>
-        [r.sku, r.prodId, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status, r.motivo]
-        .map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')
-      );
-      const csv = BOM + [headers.map(h => `"${h}"`).join(';'), ...rows].join('\n');
-      const now = new Date();
-      const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-      const a = document.createElement('a');
-      a.href     = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-      a.download = `seleta_resizer_${ts}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 200);
-      showToast('ðŸ“Š', `Planilha exportada com ${reportLog.length} linha(s)!`);
-    }
-
-    // â”€â”€â”€ ROLLBACK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let rollbackConfirmPending = false;
-    let rollbackConfirmTimer   = null;
-
-    async function startRollback() {
-      const token = document.getElementById('token').value.trim();
-      if (!token) { showToast('âš ï¸', 'Token necessÃ¡rio para desfazer.'); return; }
-      if (rollbackLog.length === 0) { showToast('â„¹ï¸', 'Nada a desfazer.'); return; }
-
-      if (!rollbackConfirmPending) {
-        rollbackConfirmPending = true;
-        const btn = document.getElementById('rollbackBtn');
-        btn.style.background   = 'rgba(245,158,11,.25)';
-        btn.style.borderColor  = 'rgba(245,158,11,.6)';
-        btn.style.color        = '#f59e0b';
-        btn.textContent        = `âš ï¸ Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
-        rollbackConfirmTimer   = setTimeout(() => {
-          rollbackConfirmPending = false;
-          btn.style.cssText = '';
-          btn.textContent = 'â†© Desfazer tudo (restaurar fotos originais)';
-        }, 5000);
-        return;
-      }
-
-      clearTimeout(rollbackConfirmTimer);
-      rollbackConfirmPending = false;
-      document.getElementById('rollbackBtn').disabled    = true;
-      document.getElementById('rollbackBtn').textContent = 'â³ Desfazendo...';
-      document.getElementById('rollbackNote').style.display = 'none';
-      clearLog();
-      addLog('info', `â†©ï¸ Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
-
-      let rbOk = 0, rbErr = 0;
-
-      for (const entry of rollbackLog) {
-        const { prodId, oldPhotoId, restoreUrl, newPhotoId, index, wasDeleted } = entry;
-        addLog('info', `ðŸ”„ Produto <strong>${esc(prodId)}</strong> â€” restaurando foto <strong>${esc(oldPhotoId)}</strong>`);
-        try {
-          if (newPhotoId) {
-            const delResp = await fetch(`https://api.anymarket.com.br/v2/products/${prodId}/images/${newPhotoId}`, {
-              method: 'DELETE', headers: { gumgaToken: token }
-            });
-            if (delResp.ok || delResp.status === 204)
-              addLog('ok', `ðŸ—‘ï¸ Foto nova <strong>${esc(newPhotoId)}</strong> removida.`);
-          }
-          if (wasDeleted && restoreUrl) {
-            const postResp = await fetch(`https://api.anymarket.com.br/v2/products/${prodId}/images`, {
-              method: 'POST',
-              headers: { gumgaToken: token, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ url: restoreUrl, index, main: false })
-            });
-            const d = await postResp.json().catch(() => ({}));
-            if (d.id) addLog('ok', `ðŸ“¤ Foto original restaurada â€” ID: <strong>${esc(d.id)}</strong>`);
-            else      addLog('err', `âŒ Falha ao restaurar: ${esc(JSON.stringify(d).slice(0,150))}`);
-          }
-          rbOk++;
-        } catch (e) {
-          addLog('err', `âŒ Erro: ${esc(e.message)}`);
-          rbErr++;
-        }
-        await new Promise(r => setTimeout(r, 800));
-      }
-
-      rollbackLog = [];
-      document.getElementById('rollbackBtn').style.display  = 'none';
-      document.getElementById('rollbackBtn').disabled       = false;
-      document.getElementById('rollbackBtn').textContent    = 'â†© Desfazer tudo (restaurar fotos originais)';
-      if (rbErr === 0) showToast('âœ…', `Rollback concluÃ­do! ${rbOk} foto(s) restauradas.`);
-      else             showToast('âš ï¸', `Rollback com ${rbErr} erro(s). Veja o log.`);
-    }
-
-</body>
-
-</html>
-
-    const MAX_RETRIES = 3;
-
-    // â”€â”€â”€ localStorage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    window.addEventListener('DOMContentLoaded', () => {
-      const t = localStorage.getItem('seleta_token');
-      const o = localStorage.getItem('seleta_oi');
-      const w = localStorage.getItem('seleta_workers');
-      if (t) document.getElementById('token').value = t;
-      if (o) document.getElementById('oi').value = o;
-      if (w) document.getElementById('workers').value = w;
-    });
-
-    function savePrefs() {
-      localStorage.setItem('seleta_token', document.getElementById('token').value.trim());
-      localStorage.setItem('seleta_oi', document.getElementById('oi').value.trim());
-      localStorage.setItem('seleta_workers', document.getElementById('workers').value.trim());
-    }
-
-    // â”€â”€â”€ Sanitize (evita XSS com dados vindos da API) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function esc(str) {
-      return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    // â”€â”€â”€ Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function toggleDelete() {
-      if (running) return;
-      deleteOld = !deleteOld;
-      document.getElementById('toggleDeleteOld').classList.toggle('active', deleteOld);
-    }
-    function toggleDry() {
-      if (running) return;
-      dryRun = !dryRun;
-      document.getElementById('toggleDryRun').classList.toggle('active', dryRun);
-    }
-
-    // â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let toastTimer = null;
-    function showToast(icon, msg) {
-      const t = document.getElementById('toast');
-      t.innerHTML = `<span style="font-size:1.1rem">${icon}</span><span>${esc(msg)}</span>`;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
-    }
-
-    // â”€â”€â”€ Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function addLog(type, icon, msg) {
-      document.getElementById('logPanel').style.display = 'block';
-      const list = document.getElementById('logList');
-      while (list.children.length >= MAX_LOG_ITEMS) list.removeChild(list.firstChild);
-      const now = new Date().toLocaleTimeString('pt-BR');
-      const item = document.createElement('div');
-      item.className = `log-item ${type}`;
-      item.innerHTML = `<span class="log-icon">${icon}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
-      list.appendChild(item);
-      list.scrollTop = list.scrollHeight;
-    }
-    function clearLog() { document.getElementById('logList').innerHTML = ''; }
-
-    // â”€â”€â”€ Progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function setProgress(done, total, label) {
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      document.getElementById('progressFill').style.width = pct + '%';
-      document.getElementById('progressPct').textContent = pct + '%';
-      document.getElementById('progressLabel').textContent = label || `Processando ${done} de ${total}`;
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statOk').textContent = stats.ok;
-      document.getElementById('statSkip').textContent = stats.skip;
-      document.getElementById('statErr').textContent = stats.err;
-    }
-    function setStatus(type, text) {
-      const b = document.getElementById('statusBadge');
-      b.className = `badge badge-${type}`;
-      b.textContent = text;
-    }
-
-    // â”€â”€â”€ Reset / Cancel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function resetAll() {
-      running = false; cancelled = false;
-      stats = { total: 0, ok: 0, skip: 0, err: 0 };
-      reportLog = [];
-      rollbackLog = [];
-      ['progressCard', 'summaryPanel', 'logPanel'].forEach(id => document.getElementById(id).style.display = 'none');
-      document.getElementById('startBtn').style.display = 'inline-flex';
-      document.getElementById('cancelBtn').style.display = 'none';
-      document.getElementById('exportBtn').style.display = 'none';
-      document.getElementById('rollbackBtn').style.display = 'none';
-      document.getElementById('rollbackNote').style.display = 'none';
-      document.getElementById('logList').innerHTML = '';
-      setProgress(0, 0, '');
-    }
-    function cancelProcess() {
-      cancelled = true;
-      addLog('warn', 'â›”', 'Cancelamento solicitado â€” aguardando item atual finalizar...');
-    }
-
-    // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-    // Fetch com retentativas para erros de rede e rate limit
-    async function fetchWithRetry(url, options, retries = MAX_RETRIES) {
-      let lastErr;
-      for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-          const r = await fetch(url, options);
-          if (r.status === 429) {
-            const wait = attempt * 3000;
-            addLog('warn', 'â³', `Rate limit (429). Aguardando ${wait / 1000}s antes de tentar novamente...`);
-            await sleep(wait);
-            continue;
-          }
-          return r;
-        } catch (e) {
-          lastErr = e;
-          if (attempt < retries) {
-            addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${retries} falhou (${esc(e.message)}). Aguardando ${attempt * 1500}ms...`);
-            await sleep(attempt * 1500);
-          }
-        }
-      }
-      throw lastErr || new Error('Falha apÃ³s mÃºltiplas tentativas.');
-    }
-
-    // â”€â”€â”€ AnyMarket helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function doDelete(prodId, photoId, token) {
-      try {
-        const r = await fetchWithRetry(`https://api.anymarket.com.br/v2/products/${prodId}/images/${photoId}`, {
-          method: 'DELETE', headers: { 'gumgaToken': token }
-        });
-        if (r.ok || r.status === 204) addLog('ok', 'ðŸ—‘ï¸', `Foto antiga <strong>${esc(photoId)}</strong> removida.`);
-        else addLog('warn', 'âš ï¸', `DELETE retornou ${r.status} para foto <strong>${esc(photoId)}</strong>.`);
-      } catch (e) { addLog('warn', 'âš ï¸', `Erro no DELETE: ${esc(e.message)}`); }
-    }
-
-    async function doPutMain(prodId, newId, ph, token) {
-      try {
-        await sleep(500);
-        const r = await fetchWithRetry(`https://api.anymarket.com.br/v2/products/${prodId}/images`, {
-          method: 'PUT',
-          headers: { 'gumgaToken': token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: Number(newId), index: ph.index ?? ph.product_photo_index ?? 0, main: true })
-        });
-        if (r.ok) addLog('ok', 'â­', `Foto <strong>${esc(newId)}</strong> definida como principal.`);
-        else addLog('warn', 'âš ï¸', `PUT main retornou ${r.status} para foto <strong>${esc(newId)}</strong>.`);
-      } catch (e) { addLog('warn', 'âš ï¸', `Erro no PUT main: ${esc(e.message)}`); }
-    }
-
-
-
-    // POST nova foto â€” retentativas apenas em erros transitÃ³rios (rede, 429, 5xx)
-    // Erros 4xx (422, 400, etc.) falham imediatamente: sÃ£o rejeiÃ§Ãµes da API, nÃ£o retentÃ¡veis
-    async function postPhoto(prodId, body, token) {
-      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-        let resp;
-        try {
-          resp = await fetch(`https://api.anymarket.com.br/v2/products/${prodId}/images`, {
-            method: 'POST',
-            headers: { 'gumgaToken': token, 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-          });
-        } catch (e) {
-          addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${MAX_RETRIES} â€” erro de rede: ${esc(e.message)}`);
-          if (attempt < MAX_RETRIES) { await sleep(attempt * 2000); continue; }
-          return null;
-        }
-
-        if (resp.status === 429) {
-          const wait = attempt * 3000;
-          addLog('warn', 'â³', `Rate limit (429). Aguardando ${wait / 1000}s (tentativa ${attempt}/${MAX_RETRIES})...`);
-          await sleep(wait);
-          continue;
-        }
-
-        let data = {};
-        try { data = await resp.json(); } catch { /* resposta nÃ£o-JSON */ }
-
-        // 4xx (exceto 429): erro da API, nÃ£o adianta retentrar
-        if (resp.status >= 400 && resp.status < 500) {
-          const errMsg = data.message || data.error || JSON.stringify(data).slice(0, 150);
-          addLog('err', 'âŒ', `API rejeitou o POST (${resp.status}): ${esc(errMsg)}`);
-          return null;
-        }
-
-        // 5xx: erro do servidor, pode tentar novamente
-        if (resp.status >= 500) {
-          addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${MAX_RETRIES} â€” servidor com erro (${resp.status}).`);
-          if (attempt < MAX_RETRIES) { await sleep(attempt * 2000); continue; }
-          return null;
-        }
-
-        if (data.id) return data.id;
-
-        const errMsg = data.message || data.error || JSON.stringify(data).slice(0, 150);
-        addLog('warn', 'ðŸ”', `Tentativa ${attempt}/${MAX_RETRIES} â€” resposta inesperada: ${esc(errMsg)}`);
-        if (attempt < MAX_RETRIES) await sleep(attempt * 2000);
-      }
-      return null;
-    }
-
-    // â”€â”€â”€ MAIN PROCESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    async function startProcess() {
-      const token = document.getElementById('token').value.trim();
-      const oi = document.getElementById('oi').value.trim();
-      const skuRaw = document.getElementById('skus').value.trim();
-
-      if (!token) { showToast('âš ï¸', 'Preencha o Token AnyMarket antes de iniciar.'); return; }
-
-      savePrefs();
-      running = true;
-      cancelled = false;
-      stats = { total: 0, ok: 0, skip: 0, err: 0 };
-      rollbackLog = [];
-      reportLog = [];
-
-      document.getElementById('progressCard').style.display = 'block';
-      document.getElementById('progressWrap').style.display = 'flex';
-      document.getElementById('summaryPanel').style.display = 'none';
-      document.getElementById('startBtn').style.display = 'none';
-      document.getElementById('cancelBtn').style.display = 'inline-flex';
-      setStatus('running', 'â³ Executando');
-
-      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-
-      try {
-        let photos = [];
-
-        // â”€â”€ Modo SKU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        if (skuList.length > 0) {
-          addLog('info', 'ðŸ”', `Buscando <strong>${skuList.length}</strong> SKU(s) na API AnyMarket...`);
-
-          for (const sku of skuList) {
-            if (cancelled) break;
-            addLog('info', 'ðŸŒ', `Consultando SKU <strong>${esc(sku)}</strong>...`);
-
-            let skuResp;
-            try {
-              skuResp = await fetchWithRetry(
-                `https://api.anymarket.com.br/v2/skus?idInClient=${encodeURIComponent(sku)}&limit=10`,
-                { headers: { 'gumgaToken': token } }
-              );
-            } catch (e) {
-              addLog('err', 'âŒ', `Erro de rede ao buscar SKU <strong>${esc(sku)}</strong>: ${esc(e.message)}`);
-              stats.err++; continue;
-            }
-
-            if (!skuResp.ok) { addLog('err', 'âŒ', `Erro ao buscar SKU <strong>${esc(sku)}</strong> (${skuResp.status})`); stats.err++; continue; }
-
-            const skuData = await skuResp.json();
-            const skuItems = skuData.content || skuData.items || (Array.isArray(skuData) ? skuData : []);
-
-            if (skuItems.length === 0) { addLog('skip', 'âš ï¸', `SKU <strong>${esc(sku)}</strong> nÃ£o encontrado.`); stats.skip++; continue; }
-
-            const productIds = [...new Set(
-              skuItems
-                .map(s => s.idProduct || s.id_product || s.productId || (s.product && (s.product.id || s.product.idProduct)))
-                .filter(Boolean)
-            )];
-
-            if (productIds.length === 0) {
-              addLog('warn', 'âš ï¸', `idProduct nÃ£o encontrado para SKU <strong>${esc(sku)}</strong> â€” buscando via /v2/products...`);
-              try {
-                const pResp = await fetchWithRetry(
-                  `https://api.anymarket.com.br/v2/products?sku=${encodeURIComponent(sku)}&limit=10`,
-                  { headers: { 'gumgaToken': token } }
-                );
-                if (pResp.ok) {
-                  const pData = await pResp.json();
-                  (pData.content || pData.items || []).forEach(p => p.id && productIds.push(p.id));
-                }
-              } catch (e) { /* fallthrough */ }
-            }
-
-            if (productIds.length === 0) {
-              addLog('err', 'âŒ', `NÃ£o encontrei o Produto para o SKU <strong>${esc(sku)}</strong>.`);
-              stats.err++; continue;
-            }
-
-            for (const productId of productIds) {
-              if (cancelled) break;
-              addLog('info', 'ðŸ“¦', `SKU <strong>${esc(sku)}</strong> â†’ Produto <strong>${esc(productId)}</strong>. Buscando fotos...`);
-
-              let photoResp;
-              try {
-                photoResp = await fetchWithRetry(
-                  `https://api.anymarket.com.br/v2/products/${productId}/images`,
-                  { headers: { 'gumgaToken': token } }
-                );
-              } catch (e) {
-                addLog('err', 'âŒ', `Erro de rede ao buscar fotos do produto <strong>${esc(productId)}</strong>: ${esc(e.message)}`);
-                stats.err++; continue;
-              }
-
-              if (!photoResp.ok) { addLog('err', 'âŒ', `Erro ao buscar fotos do produto <strong>${esc(productId)}</strong> (${photoResp.status})`); stats.err++; continue; }
-
-              const photoData = await photoResp.json();
-              const prodPhotos = Array.isArray(photoData) ? photoData : (photoData.images || photoData.content || photoData.photos || []);
-
-              addLog('info', 'â„¹ï¸', `Produto <strong>${esc(productId)}</strong>: <strong>${prodPhotos.length}</strong> foto(s) encontrada(s).`);
-              for (const ph of prodPhotos) photos.push({ ...ph, productId, skuCode: sku });
-            }
-          }
-
-        // â”€â”€ Modo geral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        } else {
-          const oiFilter = oi ? `&oi=${encodeURIComponent(oi)}` : '';
-          addLog('info', 'ðŸ”', oi ? `Buscando produtos do OI <strong>${esc(oi)}</strong>...` : 'Buscando todos os produtos da conta...');
-
-          let page = 0, totalPages = 1;
-          while (page < totalPages) {
-            if (cancelled) break;
-            let prodResp;
-            try {
-              prodResp = await fetchWithRetry(
-                `https://api.anymarket.com.br/v2/products?limit=50&offset=${page * 50}${oiFilter}`,
-                { headers: { 'gumgaToken': token } }
-              );
-            } catch (e) {
-              throw new Error(`Erro de rede ao listar produtos: ${e.message}`);
-            }
-            if (!prodResp.ok) throw new Error(`Erro ao listar produtos (${prodResp.status})`);
-            const prodData = await prodResp.json();
-            const products = prodData.content || prodData.items || (Array.isArray(prodData) ? prodData : []);
-            totalPages = prodData.totalPages ?? 1;
-            page++;
-            if (products.length === 0 && page === 1) throw new Error('Nenhum produto encontrado. Verifique o token.');
-
-            addLog('info', 'ðŸ“¦', `PÃ¡gina ${page}/${totalPages} â€” <strong>${products.length}</strong> produto(s).`);
-            for (const prod of products) {
-              if (cancelled) break;
-              try {
-                const photoResp = await fetchWithRetry(
-                  `https://api.anymarket.com.br/v2/products/${prod.id}/images`,
-                  { headers: { 'gumgaToken': token } }
-                );
-                if (!photoResp.ok) continue;
-                const photoData = await photoResp.json();
-                const prodPhotos = Array.isArray(photoData) ? photoData : (photoData.images || photoData.content || photoData.photos || []);
-                for (const ph of prodPhotos) photos.push({ ...ph, productId: prod.id });
-              } catch (e) { /* produto com erro de rede â€” continuar para o prÃ³ximo */ }
-            }
-            if (page < totalPages) await sleep(300);
-          }
-          addLog('ok', 'âœ…', `Coleta concluÃ­da. <strong>${photos.length}</strong> foto(s) para verificar.`);
-        }
-
-        stats.total = photos.length;
-        addLog('info', 'ðŸ“¸', `<strong>${photos.length}</strong> foto(s) encontradas. Iniciando processamento...`);
-
-        if (photos.length === 0) {
-          setStatus('done', 'âœ… ConcluÃ­do');
-          addLog('warn', 'âš ï¸', 'Nenhuma foto encontrada. Verifique token e SKUs.');
-          finalize(false); return;
-        }
-
-        // â”€â”€ Dry Run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        if (dryRun) {
-          addLog('info', 'ðŸ§ª', '<strong>MODO SIMULAÃ‡ÃƒO</strong> â€” nenhuma alteraÃ§Ã£o serÃ¡ feita.');
-          for (let i = 0; i < photos.length; i++) {
-            const ph = photos[i];
-            const src = ph.standardUrl || ph.originalImage || ph.standard_url || ph.url || ph.original_url || '';
-            const weservPreview = src ? `https://images.weserv.nl/?url=${src}&w=1000&h=1000&fit=contain&bg=white&output=jpg` : '';
-            addLog('info', 'ðŸ”—', `[${i + 1}/${photos.length}] Produto <strong>${esc(ph.productId)}</strong> | Foto <strong>${esc(ph.id)}</strong> | <span style="word-break:break-all;color:var(--muted)">${esc(src).slice(0, 80)}â€¦</span>`);
-            reportLog.push({ sku: ph.skuCode || '', prodId: ph.productId, oldPhotoId: ph.id, oldUrl: src, newPhotoId: '(simulaÃ§Ã£o)', newUrl: weservPreview, status: 'SIMULACAO' });
-            stats.ok++;
-            setProgress(i + 1, photos.length);
-            await sleep(20);
-          }
-          setStatus('done', 'âœ… SimulaÃ§Ã£o concluÃ­da');
-          finalize(false); return;
-        }
-
-        // â”€â”€ Processar fotos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        let currentIndex = 0;
-        let photosProcessed = 0;
-        
-        async function processPhotoTask(index) {
-          const ph = photos[index];
-          const prodId = ph.productId;
-          const isMain = ph.main === true || ph.main === 1 || ph.main_photo === '1' || ph.main_photo === 1;
-          const variation = ph.variation || ph.variationValue || null;
-
-          const srcUrl = ph.standardUrl || ph.originalImage || ph.url || '';
-          const restoreUrl = ph.originalImage || ph.standardUrl || ph.url || '';
-          const srcW = Number(ph.standardWidth) || 0;
-          const srcH = Number(ph.standardHeight) || 0;
-
-          addLog('info', 'â³', `[${index + 1}/${photos.length}] Foto <strong>${esc(ph.id)}</strong> â€” produto <strong>${esc(prodId)}</strong>`);
-
-          if (!srcUrl) {
-            addLog('err', 'âŒ', `Foto <strong>${esc(ph.id)}</strong> sem URL. Pulando.`);
-            stats.err++; return;
-          }
-
-          if (srcW === 1000 && srcH === 1000) {
-            addLog('skip', 'â­ï¸', `Foto <strong>${esc(ph.id)}</strong> jÃ¡ Ã© 1000Ã—1000. Pulando.`);
-            stats.skip++; await sleep(50); return;
-          }
-          if (srcW) addLog('info', 'ðŸ“', `DimensÃµes: <strong>${srcW}Ã—${srcH}</strong> â€” serÃ¡ redimensionada.`);
-
-          // URL weserv sem encode (conforme comportamento validado)
-          const weservUrl = `https://images.weserv.nl/?url=${srcUrl}&w=1000&h=1000&fit=contain&bg=white&output=jpg`;
-
-          addLog('info', 'â˜ï¸', `Redimensionando e hospedando via bridge local...`);
-          let finalUrl = weservUrl; // fallback
-          try {
-            const bridgePath = window.location.pathname.replace(/\/$/, '') + '/api/bridge';
-            const bridgeResp = await fetchWithRetry(bridgePath, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ weservUrl })
-            });
-            if (bridgeResp.ok) {
-              const j = await bridgeResp.json();
-              if (j && j.url) {
-                finalUrl = j.url;
-                addLog('ok', 'ðŸ”—', `Ponte finalizada: imagem hospedada com sucesso.`);
-              } else {
-                addLog('warn', 'âš ï¸', `Bridge nÃ£o retornou URL. Usando fallback weserv.`);
-              }
-            } else {
-              const errText = await bridgeResp.text().catch(() => '');
-              addLog('warn', 'âš ï¸', `Bridge falhou (${bridgeResp.status}). ${esc(errText.slice(0,100))} Usando fallback.`);
-            }
-          } catch (e) {
-            addLog('warn', 'âš ï¸', `Erro no bridge (${esc(e.message)}). Usando fallback weserv.`);
-          }
-
-          const postBody = { url: finalUrl, index: ph.index ?? ph.product_photo_index ?? 0, main: false };
-          if (variation) postBody.variation = variation;
-
-          // Tenta atÃ© MAX_RETRIES vezes â€” foto original sÃ³ Ã© deletada se POST tiver sucesso
-          const newPhotoId = await postPhoto(prodId, postBody, token);
-
-          if (!newPhotoId) {
-            addLog('err', 'âŒ', `Foto <strong>${esc(ph.id)}</strong> falhou apÃ³s ${MAX_RETRIES} tentativas. Foto original preservada.`);
-            reportLog.push({ sku: ph.skuCode || '', prodId, oldPhotoId: ph.id, oldUrl: srcUrl, newPhotoId: '', newUrl: '', status: 'ERRO_POST' });
-            stats.err++; await sleep(BASE_SLEEP); return;
-          }
-
-          addLog('ok', 'ðŸ“¤', `Nova foto enviada â€” ID: <strong>${esc(newPhotoId)}</strong>`);
-
-          rollbackLog.push({
-            prodId, oldPhotoId: ph.id, restoreUrl, newPhotoId,
-            index: ph.index ?? ph.product_photo_index ?? 0,
-            isMain, variation, wasDeleted: deleteOld
-          });
-
-          reportLog.push({
-            sku: ph.skuCode || '', prodId,
-            oldPhotoId: ph.id, oldUrl: srcUrl,
-            newPhotoId, newUrl: weservUrl, status: 'OK'
-          });
-
-          if (deleteOld) await doDelete(prodId, ph.id, token);
-          if (isMain) await doPutMain(prodId, newPhotoId, ph, token);
-
-          stats.ok++;
-          await sleep(BASE_SLEEP);
-        }
-
-        const workerLimit = Math.max(1, Math.min(10, parseInt(document.getElementById('workers')?.value || 1)));
-        
-        async function runWorker() {
-          while (currentIndex < photos.length && !cancelled) {
-             const index = currentIndex++;
-             await processPhotoTask(index);
-             photosProcessed++;
-             setProgress(photosProcessed, photos.length);
-          }
-          if (cancelled) { addLog('warn', 'â›”', 'Processamento cancelado no worker atual.'); }
-        }
-
-        const workersList = [];
-        for (let w = 0; w < workerLimit; w++) {
-           workersList.push(runWorker());
-        }
-        await Promise.all(workersList);
-
-        setStatus(cancelled ? 'error' : 'done', cancelled ? 'â›” Cancelado' : 'âœ… ConcluÃ­do');
-        finalize(cancelled);
-
-      } catch (err) {
-        addLog('err', 'âŒ', `Erro fatal: <strong>${esc(err.message)}</strong>`);
-        setStatus('error', 'âŒ Erro');
-        showToast('âŒ', err.message);
-        finalize(false);
-      }
-    }
-
-    function finalize(wasCancelled) {
-      running = false;
-      document.getElementById('startBtn').style.display = 'inline-flex';
-      document.getElementById('cancelBtn').style.display = 'none';
-      document.getElementById('summaryPanel').style.display = 'block';
-      document.getElementById('sumTotal').textContent = stats.total;
-      document.getElementById('sumOk').textContent = stats.ok;
-      document.getElementById('sumSkip').textContent = stats.skip;
-      document.getElementById('sumErr').textContent = stats.err;
-
-      if (wasCancelled) {
-        showToast('â›”', `Cancelado. ${stats.ok} foto(s) processadas.`);
-      } else if (stats.err === 0 && stats.ok > 0) {
-        showToast('ðŸŽ‰', `${stats.ok} foto(s) processadas com sucesso!`);
-      } else if (stats.err > 0) {
-        showToast('âš ï¸', `ConcluÃ­do com ${stats.err} erro(s). Veja o log.`);
-      }
-
-      if (rollbackLog.length > 0 && !dryRun) {
-        document.getElementById('rollbackBtn').style.display = 'inline-flex';
-        document.getElementById('rollbackNote').style.display = 'block';
-      }
-      if (reportLog.length > 0) {
-        document.getElementById('exportBtn').style.display = 'inline-flex';
-      }
-    }
-
-    // â”€â”€â”€ EXPORT CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    function exportSpreadsheet() {
-      if (reportLog.length === 0) { showToast('â„¹ï¸', 'Nenhum dado para exportar.'); return; }
-
-      const BOM = '\uFEFF';
-      const headers = ['SKU', 'Product ID', 'Photo ID (Antigo)', 'URL Antiga', 'Photo ID (Novo)', 'URL Nova', 'Status'];
-
-      const rows = reportLog.map(r => [
-        r.sku, r.prodId, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status
-      ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'));
-
-      const csv = BOM + [headers.map(h => `"${h}"`).join(';'), ...rows].join('\n');
-
-      const now = new Date();
-      const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-      const fileName = `seleta_resizer_${ts}.csv`;
-
-      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveOrOpenBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), fileName);
-      } else {
-        const a = document.createElement('a');
-        a.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
-        a.setAttribute('download', fileName);
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => document.body.removeChild(a), 200);
-      }
-
-      showToast('ðŸ“Š', `Planilha exportada com ${reportLog.length} linha(s)!`);
-    }
-
-    // â”€â”€â”€ ROLLBACK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    let rollbackConfirmPending = false;
-    let rollbackConfirmTimer = null;
-
-    async function startRollback() {
-      const token = document.getElementById('token').value.trim();
-      if (!token) { showToast('âš ï¸', 'Token necessÃ¡rio para desfazer.'); return; }
-      if (rollbackLog.length === 0) { showToast('â„¹ï¸', 'Nada a desfazer.'); return; }
-
-      if (!rollbackConfirmPending) {
-        rollbackConfirmPending = true;
-        const btn = document.getElementById('rollbackBtn');
-        btn.style.background = 'rgba(245,158,11,.25)';
-        btn.style.borderColor = 'rgba(245,158,11,.6)';
-        btn.style.color = '#f59e0b';
-        btn.textContent = `âš ï¸ Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
-        rollbackConfirmTimer = setTimeout(() => {
-          rollbackConfirmPending = false;
-          btn.style.background = '';
-          btn.style.borderColor = '';
-          btn.style.color = '';
-          btn.textContent = 'â†© Desfazer tudo (restaurar fotos originais)';
-        }, 5000);
-        return;
-      }
-
-      clearTimeout(rollbackConfirmTimer);
-      rollbackConfirmPending = false;
-
-      document.getElementById('rollbackBtn').disabled = true;
-      document.getElementById('rollbackBtn').textContent = 'â³ Desfazendo...';
-      document.getElementById('rollbackNote').style.display = 'none';
-
-      clearLog();
-      addLog('info', 'â†©ï¸', `Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
-
-      let rbOk = 0, rbErr = 0;
-
-      for (const entry of rollbackLog) {
-        const { prodId, oldPhotoId, restoreUrl, newPhotoId, index, variation, wasDeleted } = entry;
-        addLog('info', 'ðŸ”„', `Restaurando produto <strong>${esc(prodId)}</strong> â€” foto <strong>${esc(oldPhotoId)}</strong>`);
-
-        try {
-          if (newPhotoId) {
-            const delResp = await fetchWithRetry(
-              `https://api.anymarket.com.br/v2/products/${prodId}/images/${newPhotoId}`,
-              { method: 'DELETE', headers: { 'gumgaToken': token } }
-            );
-            if (delResp.ok || delResp.status === 204)
-              addLog('ok', 'ðŸ—‘ï¸', `Foto nova <strong>${esc(newPhotoId)}</strong> removida.`);
-            else
-              addLog('warn', 'âš ï¸', `DELETE retornou ${delResp.status}.`);
-          }
-
-          if (wasDeleted && restoreUrl) {
-            const body = { url: restoreUrl, index, main: false };
-            if (variation) body.variation = variation;
-            let postResp;
-            try {
-              postResp = await fetchWithRetry(
-                `https://api.anymarket.com.br/v2/products/${prodId}/images`,
-                { method: 'POST', headers: { 'gumgaToken': token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-              );
-            } catch (e) {
-              addLog('err', 'âŒ', `Erro de rede ao restaurar: ${esc(e.message)}`);
-              rbErr++; await sleep(800); continue;
-            }
-            let postData = {};
-            try { postData = await postResp.json(); } catch { /* resposta nÃ£o-JSON */ }
-            if (postData.id)
-              addLog('ok', 'ðŸ“¤', `Foto original restaurada â€” ID: <strong>${esc(postData.id)}</strong>`);
-            else
-              addLog('err', 'âŒ', `Falha ao restaurar: ${esc(JSON.stringify(postData).slice(0, 150))}`);
-          } else if (!wasDeleted) {
-            addLog('skip', 'â„¹ï¸', `Foto original nÃ£o foi deletada â€” apenas nova foto removida.`);
-          }
-          rbOk++;
-        } catch (e) {
-          addLog('err', 'âŒ', `Erro no rollback (produto <strong>${esc(prodId)}</strong>): ${esc(e.message)}`);
-          rbErr++;
-        }
-        await sleep(800);
-      }
-
-      rollbackLog = [];
-      document.getElementById('rollbackBtn').style.display = 'none';
-      document.getElementById('rollbackBtn').disabled = false;
-      document.getElementById('rollbackBtn').textContent = 'â†© Desfazer tudo (restaurar fotos originais)';
-
-      if (rbErr === 0) showToast('âœ…', `Rollback concluÃ­do! ${rbOk} foto(s) restauradas.`);
-      else showToast('âš ï¸', `Rollback com ${rbErr} erro(s). Veja o log.`);
-
-      addLog(rbErr === 0 ? 'ok' : 'skip', rbErr === 0 ? 'âœ…' : 'âš ï¸',
-        `Rollback finalizado â€” <strong>${rbOk}</strong> OK, <strong>${rbErr}</strong> erro(s).`);
+      rollbackLog=[];hide('rollbackBtn');btn.disabled=false;btn.textContent='Desfazer tudo';
+      showToast(er===0?'\u2705':'\u26A0\uFE0F',er===0?`Rollback OK! ${ok} foto(s).`:`Rollback com ${er} erro(s).`);
     }
   </script>
-
 </body>
-
 </html>
