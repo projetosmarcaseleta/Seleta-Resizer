@@ -1,79 +1,502 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Seleta Resizer</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0a0c10;--surface:#12151c;--card:#181c27;--border:#262c3d;--accent:#7c6ef5;--accent2:#a78bfa;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--text:#e8eaf0;--muted:#6b7394;--radius:12px}
-    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 80px}
-    header{width:100%;max-width:780px;display:flex;align-items:center;gap:14px;margin-bottom:32px}
-    .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px rgba(124,110,245,.35);flex-shrink:0}
-    header h1{font-size:1.5rem;font-weight:800;letter-spacing:-.4px}
-    header h1 b{color:var(--accent2);font-weight:800}
-    header p{font-size:.8rem;color:var(--muted);margin-top:2px}
-    .card{width:100%;max-width:780px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:16px}
-    .card-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);margin-bottom:18px}
-    .row{display:flex;gap:14px;margin-bottom:14px}
-    .row>*{flex:1}
-    label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:5px}
-    input,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font:inherit;font-size:.88rem;transition:border .2s}
-    input:focus,textarea:focus{outline:none;border-color:var(--accent)}
-    textarea{resize:vertical;min-height:80px;font-size:.82rem}
-    .hint{font-size:.7rem;color:var(--muted);margin-top:3px}
-    .toggle-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;user-select:none;transition:border .2s}
-    .toggle-row:hover{border-color:var(--accent)}
-    .toggle-track{width:40px;height:22px;border-radius:11px;background:#333;position:relative;transition:background .2s;flex-shrink:0}
-    .toggle-track.on{background:var(--accent)}
-    .toggle-track::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
-    .toggle-track.on::after{transform:translateX(18px)}
-    .toggle-label{font-size:.85rem;font-weight:500}
-    .toggle-hint{font-size:.72rem;color:var(--muted)}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font:inherit;font-weight:600;font-size:.9rem;border:none;cursor:pointer;transition:all .2s}
-    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 16px rgba(124,110,245,.35)}
-    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,110,245,.5)}
-    .btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
-    .btn-danger:hover{background:rgba(239,68,68,.25)}
-    .btn-outline{background:rgba(124,110,245,.1);color:var(--accent2);border:1px solid rgba(167,139,250,.3)}
-    .btn-outline:hover{background:rgba(124,110,245,.2)}
-    .btn-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-    .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600}
-    .badge-running{background:rgba(124,110,245,.2);color:var(--accent2)}
-    .badge-done{background:rgba(34,197,94,.15);color:var(--green)}
-    .badge-error{background:rgba(239,68,68,.15);color:var(--red)}
-    .progress-bar{width:100%;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;margin:12px 0}
-    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;width:0%;transition:width .4s}
-    .progress-info{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)}
-    .stats{display:flex;gap:20px;margin-top:10px}
-    .stat{text-align:center}
-    .stat-val{font-size:1.3rem;font-weight:700}
-    .stat-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-    .stat-ok .stat-val{color:var(--green)}
-    .stat-err .stat-val{color:var(--red)}
-    .stat-skip .stat-val{color:var(--amber)}
-    .log-wrap{max-height:320px;overflow-y:auto;background:var(--surface);border-radius:8px;padding:8px;margin-top:12px}
-    .log-wrap::-webkit-scrollbar{width:5px}
-    .log-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-    .log-item{display:flex;align-items:flex-start;gap:8px;padding:5px 8px;border-radius:6px;font-size:.78rem;line-height:1.4;animation:fadeIn .2s}
-    .log-item.ok{color:var(--green)}.log-item.err{color:var(--red)}.log-item.skip{color:var(--amber)}
-    .log-icon{flex-shrink:0;width:16px;text-align:center}
-    .log-msg{flex:1;word-break:break-word}
-    .log-time{flex-shrink:0;font-size:.65rem;color:var(--muted);margin-left:auto}
-    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-    .sum-box{text-align:center;padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border)}
-    .sum-box .val{font-size:1.6rem;font-weight:800}
-    .sum-box .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-top:2px}
-    .sum-ok .val{color:var(--green)}.sum-err .val{color:var(--red)}.sum-skip .val{color:var(--amber)}
-    .hidden{display:none!important}
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--border);padding:12px 20px;border-radius:10px;display:flex;gap:10px;align-items:center;font-size:.85rem;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .3s;z-index:99}
-    .toast.show{transform:translateX(-50%) translateY(0)}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-    @media(max-width:600px){.row{flex-direction:column}.summary{grid-template-columns:repeat(2,1fr)}.stats{flex-wrap:wrap}}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --bg: #0a0c10;
+      --surface: #12151c;
+      --card: #181c27;
+      --border: #262c3d;
+      --accent: #7c6ef5;
+      --accent2: #a78bfa;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #e8eaf0;
+      --muted: #6b7394;
+      --radius: 12px
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 80px
+    }
+
+    header {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(124, 110, 245, .35);
+      flex-shrink: 0
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -.4px
+    }
+
+    header h1 b {
+      color: var(--accent2);
+      font-weight: 800
+    }
+
+    header p {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 2px
+    }
+
+    .card {
+      width: 100%;
+      max-width: 780px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 16px
+    }
+
+    .card-title {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent2);
+      margin-bottom: 18px
+    }
+
+    .row {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px
+    }
+
+    .row>* {
+      flex: 1
+    }
+
+    label {
+      display: block;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 5px
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font: inherit;
+      font-size: .88rem;
+      transition: border .2s
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent)
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-size: .82rem
+    }
+
+    .hint {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 3px
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: border .2s
+    }
+
+    .toggle-row:hover {
+      border-color: var(--accent)
+    }
+
+    .toggle-track {
+      width: 40px;
+      height: 22px;
+      border-radius: 11px;
+      background: #333;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0
+    }
+
+    .toggle-track.on {
+      background: var(--accent)
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px;
+      left: 2px;
+      transition: transform .2s
+    }
+
+    .toggle-track.on::after {
+      transform: translateX(18px)
+    }
+
+    .toggle-label {
+      font-size: .85rem;
+      font-weight: 500
+    }
+
+    .toggle-hint {
+      font-size: .72rem;
+      color: var(--muted)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 600;
+      font-size: .9rem;
+      border: none;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(124, 110, 245, .35)
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(124, 110, 245, .5)
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, .15);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, .3)
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, .25)
+    }
+
+    .btn-outline {
+      background: rgba(124, 110, 245, .1);
+      color: var(--accent2);
+      border: 1px solid rgba(167, 139, 250, .3)
+    }
+
+    .btn-outline:hover {
+      background: rgba(124, 110, 245, .2)
+    }
+
+    .btn-amber {
+      background: rgba(245, 158, 11, .12);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, .3)
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 600
+    }
+
+    .badge-running {
+      background: rgba(124, 110, 245, .2);
+      color: var(--accent2)
+    }
+
+    .badge-done {
+      background: rgba(34, 197, 94, .15);
+      color: var(--green)
+    }
+
+    .badge-error {
+      background: rgba(239, 68, 68, .15);
+      color: var(--red)
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--surface);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 12px 0
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      width: 0%;
+      transition: width .4s
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: .78rem;
+      color: var(--muted)
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px
+    }
+
+    .stat {
+      text-align: center
+    }
+
+    .stat-val {
+      font-size: 1.3rem;
+      font-weight: 700
+    }
+
+    .stat-lbl {
+      font-size: .68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    .stat-ok .stat-val {
+      color: var(--green)
+    }
+
+    .stat-err .stat-val {
+      color: var(--red)
+    }
+
+    .stat-skip .stat-val {
+      color: var(--amber)
+    }
+
+    .log-wrap {
+      max-height: 320px;
+      overflow-y: auto;
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 8px;
+      margin-top: 12px
+    }
+
+    .log-wrap::-webkit-scrollbar {
+      width: 5px
+    }
+
+    .log-wrap::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px
+    }
+
+    .log-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: .78rem;
+      line-height: 1.4;
+      animation: fadeIn .2s
+    }
+
+    .log-item.ok {
+      color: var(--green)
+    }
+
+    .log-item.err {
+      color: var(--red)
+    }
+
+    .log-item.skip {
+      color: var(--amber)
+    }
+
+    .log-icon {
+      flex-shrink: 0;
+      width: 16px;
+      text-align: center
+    }
+
+    .log-msg {
+      flex: 1;
+      word-break: break-word
+    }
+
+    .log-time {
+      flex-shrink: 0;
+      font-size: .65rem;
+      color: var(--muted);
+      margin-left: auto
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 14px
+    }
+
+    .sum-box {
+      text-align: center;
+      padding: 14px;
+      background: var(--surface);
+      border-radius: 10px;
+      border: 1px solid var(--border)
+    }
+
+    .sum-box .val {
+      font-size: 1.6rem;
+      font-weight: 800
+    }
+
+    .sum-box .lbl {
+      font-size: .68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 2px
+    }
+
+    .sum-ok .val {
+      color: var(--green)
+    }
+
+    .sum-err .val {
+      color: var(--red)
+    }
+
+    .sum-skip .val {
+      color: var(--amber)
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: .85rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+      transition: transform .3s;
+      z-index: 99
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @media(max-width:600px) {
+      .row {
+        flex-direction: column
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .stats {
+        flex-wrap: wrap
+      }
+    }
   </style>
 </head>
+
 <body>
 
   <header>
@@ -88,12 +511,17 @@
   <div class="card">
     <div class="card-title">Configuracao</div>
     <div class="row">
-      <div><label for="token">Token AnyMarket *</label><input id="token" type="password" placeholder="gumgaToken da conta"><div class="hint">Token de autenticacao da API (gumgaToken)</div></div>
-      <div><label for="oi">Organization ID (OI) *</label><input id="oi" placeholder="ex: 259064086."><div class="hint">Identificador da conta no AnyMarket</div></div>
+      <div><label for="token">gumgaToken *</label><input id="token" type="password" placeholder="gumgaToken da conta">
+        <div class="hint">Token de autenticacao da API (gumgaToken)</div>
+      </div>
+      <div><label for="oi">Organization ID (OI) *</label><input id="oi" placeholder="ex: 259064086.">
+        <div class="hint">Identificador da conta no AnyMarket</div>
+      </div>
     </div>
     <div>
       <label for="skus">SKUs dos produtos (opcional)</label>
-      <textarea id="skus" rows="3" placeholder="Informe os codigos dos produtos, um por linha. Deixe vazio para processar todos."></textarea>
+      <textarea id="skus" rows="3"
+        placeholder="Informe os codigos dos produtos, um por linha. Deixe vazio para processar todos."></textarea>
       <div class="hint">Codigos internos dos produtos (id_in_client). Deixe vazio para processar todos.</div>
     </div>
   </div>
@@ -126,14 +554,28 @@
       <span class="badge badge-running" id="statusBadge">Aguardando</span>
     </div>
     <div id="progressWrap">
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
       <div class="progress-info"><span id="progressLabel">Aguardando...</span><span id="progressPct">0%</span></div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">Total</div></div>
-      <div class="stat stat-ok"><div class="stat-val" id="statOk">0</div><div class="stat-lbl">Sucesso</div></div>
-      <div class="stat stat-skip"><div class="stat-val" id="statSkip">0</div><div class="stat-lbl">Ignoradas</div></div>
-      <div class="stat stat-err"><div class="stat-val" id="statErr">0</div><div class="stat-lbl">Erros</div></div>
+      <div class="stat">
+        <div class="stat-val" id="statTotal">0</div>
+        <div class="stat-lbl">Total</div>
+      </div>
+      <div class="stat stat-ok">
+        <div class="stat-val" id="statOk">0</div>
+        <div class="stat-lbl">Sucesso</div>
+      </div>
+      <div class="stat stat-skip">
+        <div class="stat-val" id="statSkip">0</div>
+        <div class="stat-lbl">Ignoradas</div>
+      </div>
+      <div class="stat stat-err">
+        <div class="stat-val" id="statErr">0</div>
+        <div class="stat-lbl">Erros</div>
+      </div>
     </div>
   </div>
 
@@ -141,12 +583,25 @@
   <div class="card hidden" id="summaryPanel">
     <div class="card-title">Resumo Final</div>
     <div class="summary">
-      <div class="sum-box"><div class="val" id="sumTotal">0</div><div class="lbl">Total</div></div>
-      <div class="sum-box sum-ok"><div class="val" id="sumOk">0</div><div class="lbl">Sucesso</div></div>
-      <div class="sum-box sum-skip"><div class="val" id="sumSkip">0</div><div class="lbl">Ignoradas</div></div>
-      <div class="sum-box sum-err"><div class="val" id="sumErr">0</div><div class="lbl">Erros</div></div>
+      <div class="sum-box">
+        <div class="val" id="sumTotal">0</div>
+        <div class="lbl">Total</div>
+      </div>
+      <div class="sum-box sum-ok">
+        <div class="val" id="sumOk">0</div>
+        <div class="lbl">Sucesso</div>
+      </div>
+      <div class="sum-box sum-skip">
+        <div class="val" id="sumSkip">0</div>
+        <div class="lbl">Ignoradas</div>
+      </div>
+      <div class="sum-box sum-err">
+        <div class="val" id="sumErr">0</div>
+        <div class="lbl">Erros</div>
+      </div>
     </div>
-    <div class="hint hidden" id="rollbackNote" style="margin-top:12px;color:var(--amber)">Voce pode desfazer as alteracoes clicando em "Desfazer tudo".</div>
+    <div class="hint hidden" id="rollbackNote" style="margin-top:12px;color:var(--amber)">Voce pode desfazer as
+      alteracoes clicando em "Desfazer tudo".</div>
   </div>
 
   <!-- Log -->
@@ -158,124 +613,124 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    let deleteOld=true,running=false,activeSSE=null;
-    let stats={total:0,ok:0,skip:0,err:0},rollbackLog=[],reportLog=[];
+    let deleteOld = true, running = false, activeSSE = null;
+    let stats = { total: 0, ok: 0, skip: 0, err: 0 }, rollbackLog = [], reportLog = [];
 
-    window.addEventListener('DOMContentLoaded',()=>{
-      const t=localStorage.getItem('seleta_token'),o=localStorage.getItem('seleta_oi');
-      if(t)document.getElementById('token').value=t;
-      if(o)document.getElementById('oi').value=o;
+    window.addEventListener('DOMContentLoaded', () => {
+      const t = localStorage.getItem('seleta_token'), o = localStorage.getItem('seleta_oi');
+      if (t) document.getElementById('token').value = t;
+      if (o) document.getElementById('oi').value = o;
     });
-    function savePrefs(){
-      localStorage.setItem('seleta_token',document.getElementById('token').value.trim());
-      localStorage.setItem('seleta_oi',document.getElementById('oi').value.trim());
+    function savePrefs() {
+      localStorage.setItem('seleta_token', document.getElementById('token').value.trim());
+      localStorage.setItem('seleta_oi', document.getElementById('oi').value.trim());
     }
-    function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-    function toggleDelete(){
-      if(running)return;deleteOld=!deleteOld;
-      document.getElementById('toggleDeleteOld').classList.toggle('on',deleteOld);
+    function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
+    function toggleDelete() {
+      if (running) return; deleteOld = !deleteOld;
+      document.getElementById('toggleDeleteOld').classList.toggle('on', deleteOld);
     }
-    let toastT=null;
-    function showToast(icon,msg){
-      const t=document.getElementById('toast');
-      t.innerHTML=`<span>${icon}</span><span>${esc(msg)}</span>`;
-      t.classList.add('show');clearTimeout(toastT);
-      toastT=setTimeout(()=>t.classList.remove('show'),3500);
+    let toastT = null;
+    function showToast(icon, msg) {
+      const t = document.getElementById('toast');
+      t.innerHTML = `<span>${icon}</span><span>${esc(msg)}</span>`;
+      t.classList.add('show'); clearTimeout(toastT);
+      toastT = setTimeout(() => t.classList.remove('show'), 3500);
     }
-    const TP={info:'info',ok:'ok',err:'err',skip:'skip',error:'err'};
-    const IC={info:'\u23F3',ok:'\u2705',err:'\u274C',skip:'\u26A0\uFE0F'};
-    function addLog(tp,msg){
+    const TP = { info: 'info', ok: 'ok', err: 'err', skip: 'skip', error: 'err' };
+    const IC = { info: '\u23F3', ok: '\u2705', err: '\u274C', skip: '\u26A0\uFE0F' };
+    function addLog(tp, msg) {
       show('logPanel');
-      const list=document.getElementById('logList');
-      while(list.children.length>=300)list.removeChild(list.firstChild);
-      const now=new Date().toLocaleTimeString('pt-BR');
-      const type=TP[tp]||'info';
-      const d=document.createElement('div');
-      d.className=`log-item ${type}`;
-      d.innerHTML=`<span class="log-icon">${IC[type]||'\u23F3'}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
-      list.appendChild(d);list.scrollTop=list.scrollHeight;
+      const list = document.getElementById('logList');
+      while (list.children.length >= 300) list.removeChild(list.firstChild);
+      const now = new Date().toLocaleTimeString('pt-BR');
+      const type = TP[tp] || 'info';
+      const d = document.createElement('div');
+      d.className = `log-item ${type}`;
+      d.innerHTML = `<span class="log-icon">${IC[type] || '\u23F3'}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
+      list.appendChild(d); list.scrollTop = list.scrollHeight;
     }
-    function show(id){document.getElementById(id).classList.remove('hidden')}
-    function hide(id){document.getElementById(id).classList.add('hidden')}
-    function setProgress(done,total){
-      const p=total>0?Math.round(done/total*100):0;
-      document.getElementById('progressFill').style.width=p+'%';
-      document.getElementById('progressPct').textContent=p+'%';
-      document.getElementById('progressLabel').textContent=`Processando ${done} de ${total}`;
-      document.getElementById('statTotal').textContent=total;
-      document.getElementById('statOk').textContent=stats.ok;
-      document.getElementById('statSkip').textContent=stats.skip;
-      document.getElementById('statErr').textContent=stats.err;
+    function show(id) { document.getElementById(id).classList.remove('hidden') }
+    function hide(id) { document.getElementById(id).classList.add('hidden') }
+    function setProgress(done, total) {
+      const p = total > 0 ? Math.round(done / total * 100) : 0;
+      document.getElementById('progressFill').style.width = p + '%';
+      document.getElementById('progressPct').textContent = p + '%';
+      document.getElementById('progressLabel').textContent = `Processando ${done} de ${total}`;
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statOk').textContent = stats.ok;
+      document.getElementById('statSkip').textContent = stats.skip;
+      document.getElementById('statErr').textContent = stats.err;
     }
-    function setStatus(type,text){
-      const b=document.getElementById('statusBadge');
-      b.className=`badge badge-${type}`;b.textContent=text;
+    function setStatus(type, text) {
+      const b = document.getElementById('statusBadge');
+      b.className = `badge badge-${type}`; b.textContent = text;
     }
-    function resetAll(){
-      running=false;if(activeSSE){activeSSE.close();activeSSE=null}
-      stats={total:0,ok:0,skip:0,err:0};reportLog=[];rollbackLog=[];
-      ['progressCard','summaryPanel','logPanel'].forEach(hide);
-      show('startBtn');hide('cancelBtn');hide('exportBtn');hide('rollbackBtn');hide('rollbackNote');
-      document.getElementById('logList').innerHTML='';setProgress(0,0);
+    function resetAll() {
+      running = false; if (activeSSE) { activeSSE.close(); activeSSE = null }
+      stats = { total: 0, ok: 0, skip: 0, err: 0 }; reportLog = []; rollbackLog = [];
+      ['progressCard', 'summaryPanel', 'logPanel'].forEach(hide);
+      show('startBtn'); hide('cancelBtn'); hide('exportBtn'); hide('rollbackBtn'); hide('rollbackNote');
+      document.getElementById('logList').innerHTML = ''; setProgress(0, 0);
     }
-    function cancelProcess(){
-      if(activeSSE){activeSSE.close();activeSSE=null}
-      running=false;addLog('skip','Processamento cancelado pelo usuario.');
-      setStatus('error','Cancelado');finalize(true);
+    function cancelProcess() {
+      if (activeSSE) { activeSSE.close(); activeSSE = null }
+      running = false; addLog('skip', 'Processamento cancelado pelo usuario.');
+      setStatus('error', 'Cancelado'); finalize(true);
     }
-    function connectSSE(jobId){
+    function connectSSE(jobId) {
       // Forçar URL absoluta para o EventSource também
       const sseUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/progress/' : '/api/progress/';
       const es = new EventSource(sseUrl + jobId);
-      activeSSE=es;
-      es.onmessage=(e)=>{
-        let d;try{d=JSON.parse(e.data)}catch{return}
-        if(d.event==='log')addLog(d.tp||'info',d.msg);
-        else if(d.event==='progress'){
-          stats.total=d.total;stats.ok=d.ok;stats.err=d.erros;
-          setProgress(d.done,d.total);
-        }else if(d.event==='complete'){
-          es.close();activeSSE=null;
-          const res=d.results||[];
-          res.forEach(r=>{
-            reportLog.push({sku:r.sku,prodId:r.id_produto,oldPhotoId:r.id_foto,variacao:r.variacao||'',oldUrl:r.url_original,newPhotoId:r._newPhotoId||'',newUrl:r.nova_url||'',status:r.status,motivo:r.motivo_erro||''});
-            if(r.status==='SUCESSO'&&r._newPhotoId)rollbackLog.push({prodId:r.id_produto,oldPhotoId:r.id_foto,restoreUrl:r.url_original,newPhotoId:r._newPhotoId,index:r._idx??0,isMain:r._isMain??false,wasDeleted:r._oldDeleted??false,variacao:r._variacao||''});
+      activeSSE = es;
+      es.onmessage = (e) => {
+        let d; try { d = JSON.parse(e.data) } catch { return }
+        if (d.event === 'log') addLog(d.tp || 'info', d.msg);
+        else if (d.event === 'progress') {
+          stats.total = d.total; stats.ok = d.ok; stats.err = d.erros;
+          setProgress(d.done, d.total);
+        } else if (d.event === 'complete') {
+          es.close(); activeSSE = null;
+          const res = d.results || [];
+          res.forEach(r => {
+            reportLog.push({ sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto, variacao: r.variacao || '', oldUrl: r.url_original, newPhotoId: r._newPhotoId || '', newUrl: r.nova_url || '', status: r.status, motivo: r.motivo_erro || '' });
+            if (r.status === 'SUCESSO' && r._newPhotoId) rollbackLog.push({ prodId: r.id_produto, oldPhotoId: r.id_foto, restoreUrl: r.url_original, newPhotoId: r._newPhotoId, index: r._idx ?? 0, isMain: r._isMain ?? false, wasDeleted: r._oldDeleted ?? false, variacao: r._variacao || '' });
           });
-          stats.total=d.total;stats.ok=d.ok;stats.err=d.erros;stats.skip=0;
-          setProgress(d.total,d.total);setStatus('done','Concluido');
-          addLog('ok',`Finalizado: ${d.ok} sucesso(s), ${d.erros} erro(s).`);
+          stats.total = d.total; stats.ok = d.ok; stats.err = d.erros; stats.skip = 0;
+          setProgress(d.total, d.total); setStatus('done', 'Concluido');
+          addLog('ok', `Finalizado: ${d.ok} sucesso(s), ${d.erros} erro(s).`);
           finalize(false);
-        }else if(d.event==='error'){
-          es.close();activeSSE=null;addLog('err',`Erro fatal: ${d.msg}`);
-          setStatus('error','Erro');showToast('\u274C',d.msg);finalize(false);
+        } else if (d.event === 'error') {
+          es.close(); activeSSE = null; addLog('err', `Erro fatal: ${d.msg}`);
+          setStatus('error', 'Erro'); showToast('\u274C', d.msg); finalize(false);
         }
       };
-      es.onerror=()=>{
-        if(!activeSSE)return;addLog('err','Conexao SSE perdida.');
-        es.close();activeSSE=null;setStatus('error','Conexao perdida');finalize(false);
+      es.onerror = () => {
+        if (!activeSSE) return; addLog('err', 'Conexao SSE perdida.');
+        es.close(); activeSSE = null; setStatus('error', 'Conexao perdida'); finalize(false);
       };
     }
-    async function startProcess(){
-      const token=document.getElementById('token').value.trim();
-      const oi=document.getElementById('oi').value.trim();
-      const skuRaw=document.getElementById('skus').value.trim();
-      if(!token){showToast('\u26A0\uFE0F','Preencha o Token AnyMarket.');return}
-      if(!oi){showToast('\u26A0\uFE0F','Preencha o OI.');return}
-      savePrefs();running=true;stats={total:0,ok:0,skip:0,err:0};rollbackLog=[];reportLog=[];
-      show('progressCard');hide('summaryPanel');hide('startBtn');show('cancelBtn');
-      setStatus('running','Executando');document.getElementById('logList').innerHTML='';
-      const skuList=skuRaw?skuRaw.split('\n').map(s=>s.trim()).filter(Boolean):[];
-      addLog('info',`Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length?` | ${skuList.length} SKU(s)`:' | todos os produtos'}`);
-      try{
+    async function startProcess() {
+      const token = document.getElementById('token').value.trim();
+      const oi = document.getElementById('oi').value.trim();
+      const skuRaw = document.getElementById('skus').value.trim();
+      if (!token) { showToast('\u26A0\uFE0F', 'Preencha o Token AnyMarket.'); return }
+      if (!oi) { showToast('\u26A0\uFE0F', 'Preencha o OI.'); return }
+      savePrefs(); running = true; stats = { total: 0, ok: 0, skip: 0, err: 0 }; rollbackLog = []; reportLog = [];
+      show('progressCard'); hide('summaryPanel'); hide('startBtn'); show('cancelBtn');
+      setStatus('running', 'Executando'); document.getElementById('logList').innerHTML = '';
+      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'}`);
+      try {
         // Forçar URL absoluta baseada no contexto
         const apiUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/processar' : '/api/processar';
-        
+
         const resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ oi, token, skus: skuList, deleteOld })
         });
-        
+
         const text = await resp.text();
         let json;
         try {
@@ -284,8 +739,8 @@
           throw new Error(`Resposta do servidor não é JSON: ${text.slice(0, 100)}`);
         }
 
-        if(!resp.ok || !json.ok) throw new Error(json.error || `Erro ${resp.status}`);
-        addLog('info',`Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
+        if (!resp.ok || !json.ok) throw new Error(json.error || `Erro ${resp.status}`);
+        addLog('info', `Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
         connectSSE(json.jobId);
       } catch (err) {
         addLog('err', esc(err.message));
@@ -294,57 +749,58 @@
         finalize(false);
       }
     }
-    function finalize(cancelled){
-      running=false;show('startBtn');hide('cancelBtn');show('summaryPanel');
-      document.getElementById('sumTotal').textContent=stats.total;
-      document.getElementById('sumOk').textContent=stats.ok;
-      document.getElementById('sumSkip').textContent=stats.skip;
-      document.getElementById('sumErr').textContent=stats.err;
-      if(cancelled)showToast('\u26D4',`Cancelado. ${stats.ok} foto(s) processadas.`);
-      else if(stats.err===0&&stats.ok>0)showToast('\uD83C\uDF89',`${stats.ok} foto(s) processadas com sucesso!`);
-      else if(stats.err>0)showToast('\u26A0\uFE0F',`Concluido com ${stats.err} erro(s).`);
-      if(rollbackLog.length>0){show('rollbackBtn');show('rollbackNote')}
-      if(reportLog.length>0)show('exportBtn');
+    function finalize(cancelled) {
+      running = false; show('startBtn'); hide('cancelBtn'); show('summaryPanel');
+      document.getElementById('sumTotal').textContent = stats.total;
+      document.getElementById('sumOk').textContent = stats.ok;
+      document.getElementById('sumSkip').textContent = stats.skip;
+      document.getElementById('sumErr').textContent = stats.err;
+      if (cancelled) showToast('\u26D4', `Cancelado. ${stats.ok} foto(s) processadas.`);
+      else if (stats.err === 0 && stats.ok > 0) showToast('\uD83C\uDF89', `${stats.ok} foto(s) processadas com sucesso!`);
+      else if (stats.err > 0) showToast('\u26A0\uFE0F', `Concluido com ${stats.err} erro(s).`);
+      if (rollbackLog.length > 0) { show('rollbackBtn'); show('rollbackNote') }
+      if (reportLog.length > 0) show('exportBtn');
     }
-    function exportSpreadsheet(){
-      if(!reportLog.length){showToast('\u2139\uFE0F','Nenhum dado.');return}
-      const BOM='\uFEFF';
-      const h=['SKU','Product ID','Variacao','Photo ID Antigo','URL Antiga','Photo ID Novo','URL Nova','Status','Motivo'];
-      const rows=reportLog.map(r=>[r.sku,r.prodId,r.variacao,r.oldPhotoId,r.oldUrl,r.newPhotoId,r.newUrl,r.status,r.motivo].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';'));
-      const csv=BOM+[h.map(x=>`"${x}"`).join(';'),...rows].join('\n');
-      const n=new Date();const ts=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}`;
-      const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-      a.download=`seleta_resizer_${ts}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),200);
-      showToast('\uD83D\uDCCA',`Planilha exportada: ${reportLog.length} linha(s).`);
+    function exportSpreadsheet() {
+      if (!reportLog.length) { showToast('\u2139\uFE0F', 'Nenhum dado.'); return }
+      const BOM = '\uFEFF';
+      const h = ['SKU', 'Product ID', 'Variacao', 'Photo ID Antigo', 'URL Antiga', 'Photo ID Novo', 'URL Nova', 'Status', 'Motivo'];
+      const rows = reportLog.map(r => [r.sku, r.prodId, r.variacao, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status, r.motivo].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'));
+      const csv = BOM + [h.map(x => `"${x}"`).join(';'), ...rows].join('\n');
+      const n = new Date(); const ts = `${n.getFullYear()}${String(n.getMonth() + 1).padStart(2, '0')}${String(n.getDate()).padStart(2, '0')}_${String(n.getHours()).padStart(2, '0')}${String(n.getMinutes()).padStart(2, '0')}`;
+      const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = `seleta_resizer_${ts}.csv`; document.body.appendChild(a); a.click(); setTimeout(() => document.body.removeChild(a), 200);
+      showToast('\uD83D\uDCCA', `Planilha exportada: ${reportLog.length} linha(s).`);
     }
-    let rbPend=false,rbTimer=null;
-    async function startRollback(){
-      const token=document.getElementById('token').value.trim();
-      if(!token){showToast('\u26A0\uFE0F','Token necessario.');return}
-      if(!rollbackLog.length){showToast('\u2139\uFE0F','Nada a desfazer.');return}
-      if(!rbPend){
-        rbPend=true;const btn=document.getElementById('rollbackBtn');
-        btn.style.cssText='background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.6);color:#f59e0b';
-        btn.textContent=`Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
-        rbTimer=setTimeout(()=>{rbPend=false;btn.style.cssText='';btn.textContent='Desfazer tudo'},5000);return;
+    let rbPend = false, rbTimer = null;
+    async function startRollback() {
+      const token = document.getElementById('token').value.trim();
+      if (!token) { showToast('\u26A0\uFE0F', 'Token necessario.'); return }
+      if (!rollbackLog.length) { showToast('\u2139\uFE0F', 'Nada a desfazer.'); return }
+      if (!rbPend) {
+        rbPend = true; const btn = document.getElementById('rollbackBtn');
+        btn.style.cssText = 'background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.6);color:#f59e0b';
+        btn.textContent = `Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
+        rbTimer = setTimeout(() => { rbPend = false; btn.style.cssText = ''; btn.textContent = 'Desfazer tudo' }, 5000); return;
       }
-      clearTimeout(rbTimer);rbPend=false;
-      const btn=document.getElementById('rollbackBtn');btn.disabled=true;btn.textContent='Desfazendo...';
-      hide('rollbackNote');document.getElementById('logList').innerHTML='';
-      addLog('info',`Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
-      let ok=0,er=0;
-      for(const e of rollbackLog){
-        addLog('info',`Produto <strong>${esc(e.prodId)}</strong> \u2014 foto <strong>${esc(e.oldPhotoId)}</strong>`);
-        try{
-          if(e.newPhotoId){const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images/${e.newPhotoId}`,{method:'DELETE',headers:{gumgaToken:token}});if(r.ok||r.status===204)addLog('ok',`Foto nova ${esc(e.newPhotoId)} removida.`)}
-          if(e.wasDeleted&&e.restoreUrl){const restoreBody={url:e.restoreUrl,index:e.index,main:false};if(e.variacao)restoreBody.variation=e.variacao;const r=await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`,{method:'POST',headers:{gumgaToken:token,'Content-Type':'application/json'},body:JSON.stringify(restoreBody)});const d=await r.json().catch(()=>({}));if(d.id)addLog('ok',`Foto original restaurada: ${esc(d.id)}`);else addLog('err','Falha ao restaurar')}
+      clearTimeout(rbTimer); rbPend = false;
+      const btn = document.getElementById('rollbackBtn'); btn.disabled = true; btn.textContent = 'Desfazendo...';
+      hide('rollbackNote'); document.getElementById('logList').innerHTML = '';
+      addLog('info', `Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
+      let ok = 0, er = 0;
+      for (const e of rollbackLog) {
+        addLog('info', `Produto <strong>${esc(e.prodId)}</strong> \u2014 foto <strong>${esc(e.oldPhotoId)}</strong>`);
+        try {
+          if (e.newPhotoId) { const r = await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images/${e.newPhotoId}`, { method: 'DELETE', headers: { gumgaToken: token } }); if (r.ok || r.status === 204) addLog('ok', `Foto nova ${esc(e.newPhotoId)} removida.`) }
+          if (e.wasDeleted && e.restoreUrl) { const restoreBody = { url: e.restoreUrl, index: e.index, main: false }; if (e.variacao) restoreBody.variation = e.variacao; const r = await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`, { method: 'POST', headers: { gumgaToken: token, 'Content-Type': 'application/json' }, body: JSON.stringify(restoreBody) }); const d = await r.json().catch(() => ({})); if (d.id) addLog('ok', `Foto original restaurada: ${esc(d.id)}`); else addLog('err', 'Falha ao restaurar') }
           ok++;
-        }catch(x){addLog('err',esc(x.message));er++}
-        await new Promise(r=>setTimeout(r,800));
+        } catch (x) { addLog('err', esc(x.message)); er++ }
+        await new Promise(r => setTimeout(r, 800));
       }
-      rollbackLog=[];hide('rollbackBtn');btn.disabled=false;btn.textContent='Desfazer tudo';
-      showToast(er===0?'\u2705':'\u26A0\uFE0F',er===0?`Rollback OK! ${ok} foto(s).`:`Rollback com ${er} erro(s).`);
+      rollbackLog = []; hide('rollbackBtn'); btn.disabled = false; btn.textContent = 'Desfazer tudo';
+      showToast(er === 0 ? '\u2705' : '\u26A0\uFE0F', er === 0 ? `Rollback OK! ${ok} foto(s).` : `Rollback com ${er} erro(s).`);
     }
   </script>
 </body>
+
 </html>
