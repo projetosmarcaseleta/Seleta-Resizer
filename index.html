@@ -560,6 +560,83 @@
       border-radius: 20px;
     }
 
+    /* ── Fit Mode Selector ── */
+    .fit-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .fit-option {
+      flex: 1;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .fit-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .fit-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      transition: all .25s ease;
+    }
+
+    .fit-option input:checked + .fit-card {
+      border-color: var(--accent);
+      background: rgba(124, 110, 245, .08);
+    }
+
+    .fit-option:hover .fit-card {
+      border-color: var(--accent2);
+    }
+
+    .fit-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .fit-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fit-name {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .fit-desc {
+      font-size: .68rem;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .fit-badge {
+      margin-left: auto;
+      font-size: .6rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      flex-shrink: 0;
+    }
+
+    .fit-badge-rec {
+      background: rgba(34, 197, 94, .12);
+      color: var(--green);
+    }
+
     /* ── Confirmation Modal ── */
     .modal-overlay {
       position: fixed;
@@ -830,6 +907,34 @@
     </div>
   </div>
 
+  <!-- Fit Mode -->
+  <div class="card" id="fitModeCard">
+    <div class="card-title">Modo de Ajuste</div>
+    <div class="fit-group">
+      <label class="fit-option">
+        <input type="radio" name="fitMode" value="cover" checked onchange="setFitMode('cover')">
+        <div class="fit-card">
+          <span class="fit-icon">🖼️</span>
+          <div class="fit-info">
+            <span class="fit-name">Preencher</span>
+            <span class="fit-desc">Preenche todo o espaço, cortando bordas se necessário</span>
+          </div>
+          <span class="fit-badge fit-badge-rec">Recomendado</span>
+        </div>
+      </label>
+      <label class="fit-option">
+        <input type="radio" name="fitMode" value="contain" onchange="setFitMode('contain')">
+        <div class="fit-card">
+          <span class="fit-icon">📏</span>
+          <div class="fit-info">
+            <span class="fit-name">Ajustar</span>
+            <span class="fit-desc">Encaixa a imagem completa com fundo branco</span>
+          </div>
+        </div>
+      </label>
+    </div>
+  </div>
+
   <!-- Options -->
   <div class="card">
     <div class="toggle-row" onclick="toggleDelete()">
@@ -941,6 +1046,11 @@
           <span class="detail-value" id="modalSkus">Todos os produtos</span>
         </div>
         <div class="modal-detail">
+          <span class="detail-icon">🖼️</span>
+          <span class="detail-label">Modo</span>
+          <span class="detail-value" id="modalFit">Preencher</span>
+        </div>
+        <div class="modal-detail">
           <span class="detail-icon">🗑️</span>
           <span class="detail-label">Deletar antiga</span>
           <span class="detail-value" id="modalDelete">Sim</span>
@@ -962,6 +1072,7 @@
   <script>
     let deleteOld = true, running = false, activeSSE = null;
     let selectedWidth = 1000, selectedHeight = 1000;
+    let fitMode = 'cover';
     let stats = { total: 0, ok: 0, skip: 0, err: 0 }, rollbackLog = [], reportLog = [];
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -983,6 +1094,10 @@
       selectedWidth = w;
       selectedHeight = h;
     }
+    function setFitMode(mode) {
+      if (running) return;
+      fitMode = mode;
+    }
     function openModal() {
       const oi = document.getElementById('oi').value.trim();
       const skuRaw = document.getElementById('skus').value.trim();
@@ -990,6 +1105,7 @@
       document.getElementById('modalDim').textContent = `${selectedWidth} × ${selectedHeight}`;
       document.getElementById('modalOi').textContent = oi || '—';
       document.getElementById('modalSkus').textContent = skuList.length > 0 ? `${skuList.length} SKU(s)` : 'Todos os produtos';
+      document.getElementById('modalFit').textContent = fitMode === 'cover' ? 'Preencher (corta bordas)' : 'Ajustar (fundo branco)';
       document.getElementById('modalDelete').textContent = deleteOld ? 'Sim' : 'Não';
       document.getElementById('confirmModal').classList.add('active');
     }
@@ -1094,7 +1210,7 @@
       show('progressCard'); hide('summaryPanel'); hide('startBtn'); show('cancelBtn');
       setStatus('running', 'Executando'); document.getElementById('logList').innerHTML = '';
       const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'} | Dimensão: <strong>${selectedWidth}×${selectedHeight}</strong>`);
+      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'} | Dimensão: <strong>${selectedWidth}×${selectedHeight}</strong> | Modo: <strong>${fitMode === 'cover' ? 'Preencher' : 'Ajustar'}</strong>`);
       try {
         // Forçar URL absoluta baseada no contexto
         const apiUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/processar' : '/api/processar';
@@ -1102,7 +1218,7 @@
         const resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ oi, token, skus: skuList, deleteOld, width: selectedWidth, height: selectedHeight })
+          body: JSON.stringify({ oi, token, skus: skuList, deleteOld, width: selectedWidth, height: selectedHeight, fitMode })
         });
 
         const text = await resp.text();

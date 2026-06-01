@@ -131,15 +131,21 @@ function readBody(req) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ── Resize + Save ────────────────────────────────────────────
-async function resizeAndSave(srcUrl, width = 1000, height = 1000) {
+async function resizeAndSave(srcUrl, width = 1000, height = 1000, fitMode = 'cover') {
   if (!sharp) throw new Error('sharp não instalado no servidor');
 
   const dl = await httpsGet(srcUrl);
   if (dl.status !== 200) throw new Error(`Download falhou: HTTP ${dl.status}`);
   if (!dl.body || dl.body.length < 512) throw new Error(`Imagem inválida (${dl.body?.length ?? 0} bytes)`);
 
+  const fit = fitMode === 'contain' ? 'contain' : 'cover';
+  const resizeOpts = { fit, position: 'centre' };
+  if (fit === 'contain') {
+    resizeOpts.background = { r: 255, g: 255, b: 255, alpha: 1 };
+  }
+
   const resized = await sharp(dl.body)
-    .resize(width, height, { fit: 'contain', background: { r:255, g:255, b:255, alpha:1 } })
+    .resize(width, height, resizeOpts)
     .jpeg({ quality: 95 })
     .toBuffer();
 
@@ -156,7 +162,7 @@ async function resizeAndSave(srcUrl, width = 1000, height = 1000) {
 }
 
 // ── Processamento do job ─────────────────────────────────────
-async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000 }) {
+async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000, fitMode = 'cover' }) {
   try {
     // 1. Buscar fotos via n8n
     emit(jobId, { event: 'log', tp: 'info', msg: '🔍 Consultando banco de dados via n8n...' });
@@ -205,8 +211,8 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, he
         if (!srcUrl) throw new Error('URL da imagem ausente');
 
         // Resize
-        emit(jobId, { event: 'log', tp: 'info', msg: `   📐 Redimensionando para ${width}×${height}...` });
-        const resized = await resizeAndSave(srcUrl, width, height);
+        emit(jobId, { event: 'log', tp: 'info', msg: `   📐 Redimensionando para ${width}×${height} (${fitMode === 'cover' ? 'preencher' : 'ajustar'})...` });
+        const resized = await resizeAndSave(srcUrl, width, height, fitMode);
         tempFilename  = resized.filename;
 
         // POST nova foto
@@ -354,7 +360,8 @@ const server = http.createServer(async (req, res) => {
       // Validar dimensões permitidas
       const allowed = ['800x1200', '1000x1000', '1000x1500'];
       if (!allowed.includes(`${width}x${height}`)) throw new Error(`Dimensão ${width}x${height} não permitida. Use: ${allowed.join(', ')}`);
-      procesarJob(jobId, { oi, skus, token, deleteOld, width, height });
+      const fitMode = (body.fitMode === 'contain') ? 'contain' : 'cover';
+      procesarJob(jobId, { oi, skus, token, deleteOld, width, height, fitMode });
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, jobId }));
