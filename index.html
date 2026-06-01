@@ -447,6 +447,260 @@
       display: none !important
     }
 
+    /* ── Dimension Selector ── */
+    .dim-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dim-option {
+      flex: 1;
+      min-width: 140px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .dim-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .dim-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 12px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      transition: all .25s ease;
+      text-align: center;
+    }
+
+    .dim-option input:checked + .dim-card {
+      border-color: var(--accent);
+      background: rgba(124, 110, 245, .08);
+      box-shadow: 0 0 20px rgba(124, 110, 245, .15);
+    }
+
+    .dim-option:hover .dim-card {
+      border-color: var(--accent2);
+      transform: translateY(-2px);
+    }
+
+    .dim-icon {
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .dim-preview {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      background: rgba(124, 110, 245, .06);
+      position: relative;
+      transition: border-color .2s;
+    }
+
+    .dim-option input:checked + .dim-card .dim-preview {
+      border-color: var(--accent);
+    }
+
+    .dim-preview::after {
+      content: '';
+      position: absolute;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 3px;
+      opacity: .35;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .dim-preview[data-ratio="1:1"]::after {
+      width: 28px;
+      height: 28px;
+    }
+
+    .dim-preview[data-ratio="2:3"]::after {
+      width: 22px;
+      height: 33px;
+    }
+
+    .dim-option input:checked + .dim-card .dim-preview::after {
+      opacity: .7;
+    }
+
+    .dim-size {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.2px;
+    }
+
+    .dim-label {
+      font-size: .68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .dim-ratio {
+      font-size: .65rem;
+      color: var(--accent2);
+      font-weight: 600;
+      padding: 2px 8px;
+      background: rgba(167, 139, 250, .1);
+      border-radius: 20px;
+    }
+
+    /* ── Confirmation Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .5), 0 0 40px rgba(124, 110, 245, .1);
+      transform: scale(.92) translateY(16px);
+      transition: transform .3s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .modal-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .modal-subtitle {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .modal-body {
+      margin-bottom: 24px;
+    }
+
+    .modal-detail {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: .85rem;
+    }
+
+    .modal-detail .detail-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .modal-detail .detail-label {
+      color: var(--muted);
+      font-size: .75rem;
+      min-width: 80px;
+    }
+
+    .modal-detail .detail-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(245, 158, 11, .08);
+      border: 1px solid rgba(245, 158, 11, .2);
+      border-radius: 10px;
+      margin-top: 12px;
+      font-size: .78rem;
+      color: var(--amber);
+      line-height: 1.4;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .modal-actions .btn {
+      min-width: 100px;
+      justify-content: center;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font: inherit;
+      font-weight: 600;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
     .toast {
       position: fixed;
       bottom: 24px;
@@ -481,6 +735,11 @@
       }
     }
 
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+
     @media(max-width:600px) {
       .row {
         flex-direction: column
@@ -493,6 +752,14 @@
       .stats {
         flex-wrap: wrap
       }
+
+      .dim-group {
+        flex-direction: column;
+      }
+
+      .modal {
+        padding: 24px;
+      }
     }
   </style>
 </head>
@@ -503,7 +770,7 @@
     <div class="logo">&#x1F5BC;</div>
     <div>
       <h1>Seleta <b>Resizer</b></h1>
-      <p>Redimensionamento de imagens para 1000x1000 px no AnyMarket</p>
+      <p>Redimensionamento de imagens para AnyMarket</p>
     </div>
   </header>
 
@@ -527,6 +794,40 @@
     </div>
   </div>
 
+  <!-- Dimension Selector -->
+  <div class="card">
+    <div class="card-title">Dimensão do Redimensionamento</div>
+    <div class="dim-group">
+      <label class="dim-option">
+        <input type="radio" name="dimension" value="800x1200" onchange="setDimension(800, 1200)">
+        <div class="dim-card">
+          <div class="dim-preview" data-ratio="2:3"></div>
+          <div class="dim-size">800 × 1200</div>
+          <div class="dim-label">Retrato</div>
+          <div class="dim-ratio">2:3</div>
+        </div>
+      </label>
+      <label class="dim-option">
+        <input type="radio" name="dimension" value="1000x1000" checked onchange="setDimension(1000, 1000)">
+        <div class="dim-card">
+          <div class="dim-preview" data-ratio="1:1"></div>
+          <div class="dim-size">1000 × 1000</div>
+          <div class="dim-label">Quadrado</div>
+          <div class="dim-ratio">1:1</div>
+        </div>
+      </label>
+      <label class="dim-option">
+        <input type="radio" name="dimension" value="1000x1500" onchange="setDimension(1000, 1500)">
+        <div class="dim-card">
+          <div class="dim-preview" data-ratio="2:3"></div>
+          <div class="dim-size">1000 × 1500</div>
+          <div class="dim-label">Retrato Grande</div>
+          <div class="dim-ratio">2:3</div>
+        </div>
+      </label>
+    </div>
+  </div>
+
   <!-- Options -->
   <div class="card">
     <div class="toggle-row" onclick="toggleDelete()">
@@ -541,7 +842,7 @@
   <!-- Actions -->
   <div class="card">
     <div class="actions">
-      <button class="btn btn-primary" id="startBtn" onclick="startProcess()">Iniciar Processamento</button>
+      <button class="btn btn-primary" id="startBtn" onclick="openModal()">Iniciar Processamento</button>
       <button class="btn btn-danger hidden" id="cancelBtn" onclick="cancelProcess()">Cancelar</button>
       <button class="btn btn-outline hidden" id="exportBtn" onclick="exportSpreadsheet()">Exportar CSV</button>
       <button class="btn btn-amber hidden" id="rollbackBtn" onclick="startRollback()">Desfazer tudo</button>
@@ -611,10 +912,54 @@
     <div class="log-wrap" id="logList"></div>
   </div>
 
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-icon">⚙️</div>
+        <div>
+          <div class="modal-title">Confirmar Processamento</div>
+          <div class="modal-subtitle">Revise as configurações antes de iniciar</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-detail">
+          <span class="detail-icon">📐</span>
+          <span class="detail-label">Dimensão</span>
+          <span class="detail-value" id="modalDim">1000 × 1000</span>
+        </div>
+        <div class="modal-detail">
+          <span class="detail-icon">🏢</span>
+          <span class="detail-label">OI</span>
+          <span class="detail-value" id="modalOi">—</span>
+        </div>
+        <div class="modal-detail">
+          <span class="detail-icon">📦</span>
+          <span class="detail-label">SKUs</span>
+          <span class="detail-value" id="modalSkus">Todos os produtos</span>
+        </div>
+        <div class="modal-detail">
+          <span class="detail-icon">🗑️</span>
+          <span class="detail-label">Deletar antiga</span>
+          <span class="detail-value" id="modalDelete">Sim</span>
+        </div>
+        <div class="modal-warning" id="modalWarning">
+          <span>⚠️</span>
+          <span>Esta ação irá redimensionar as imagens e não poderá ser desfeita facilmente. Use o botão "Desfazer tudo" após o processamento se necessário.</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmAndStart()">Confirmar e Iniciar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
     let deleteOld = true, running = false, activeSSE = null;
+    let selectedWidth = 1000, selectedHeight = 1000;
     let stats = { total: 0, ok: 0, skip: 0, err: 0 }, rollbackLog = [], reportLog = [];
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -631,6 +976,32 @@
       if (running) return; deleteOld = !deleteOld;
       document.getElementById('toggleDeleteOld').classList.toggle('on', deleteOld);
     }
+    function setDimension(w, h) {
+      if (running) return;
+      selectedWidth = w;
+      selectedHeight = h;
+    }
+    function openModal() {
+      const oi = document.getElementById('oi').value.trim();
+      const skuRaw = document.getElementById('skus').value.trim();
+      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      document.getElementById('modalDim').textContent = `${selectedWidth} × ${selectedHeight}`;
+      document.getElementById('modalOi').textContent = oi || '—';
+      document.getElementById('modalSkus').textContent = skuList.length > 0 ? `${skuList.length} SKU(s)` : 'Todos os produtos';
+      document.getElementById('modalDelete').textContent = deleteOld ? 'Sim' : 'Não';
+      document.getElementById('confirmModal').classList.add('active');
+    }
+    function closeModal() {
+      document.getElementById('confirmModal').classList.remove('active');
+    }
+    function confirmAndStart() {
+      closeModal();
+      startProcess();
+    }
+    // Keyboard shortcut: Escape to close modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
     let toastT = null;
     function showToast(icon, msg) {
       const t = document.getElementById('toast');
@@ -721,7 +1092,7 @@
       show('progressCard'); hide('summaryPanel'); hide('startBtn'); show('cancelBtn');
       setStatus('running', 'Executando'); document.getElementById('logList').innerHTML = '';
       const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'}`);
+      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'} | Dimensão: <strong>${selectedWidth}×${selectedHeight}</strong>`);
       try {
         // Forçar URL absoluta baseada no contexto
         const apiUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/processar' : '/api/processar';
@@ -729,7 +1100,7 @@
         const resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ oi, token, skus: skuList, deleteOld })
+          body: JSON.stringify({ oi, token, skus: skuList, deleteOld, width: selectedWidth, height: selectedHeight })
         });
 
         const text = await resp.text();

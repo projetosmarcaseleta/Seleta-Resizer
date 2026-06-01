@@ -131,7 +131,7 @@ function readBody(req) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ── Resize + Save ────────────────────────────────────────────
-async function resizeAndSave(srcUrl) {
+async function resizeAndSave(srcUrl, width = 1000, height = 1000) {
   if (!sharp) throw new Error('sharp não instalado no servidor');
 
   const dl = await httpsGet(srcUrl);
@@ -139,12 +139,12 @@ async function resizeAndSave(srcUrl) {
   if (!dl.body || dl.body.length < 512) throw new Error(`Imagem inválida (${dl.body?.length ?? 0} bytes)`);
 
   const resized = await sharp(dl.body)
-    .resize(1000, 1000, { fit: 'contain', background: { r:255, g:255, b:255, alpha:1 } })
+    .resize(width, height, { fit: 'contain', background: { r:255, g:255, b:255, alpha:1 } })
     .jpeg({ quality: 95 })
     .toBuffer();
 
   const meta = await sharp(resized).metadata();
-  if (meta.width !== 1000 || meta.height !== 1000)
+  if (meta.width !== width || meta.height !== height)
     throw new Error(`Dimensão incorreta: ${meta.width}x${meta.height}`);
 
   const filename = `resize_${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
@@ -156,7 +156,7 @@ async function resizeAndSave(srcUrl) {
 }
 
 // ── Processamento do job ─────────────────────────────────────
-async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
+async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000 }) {
   try {
     // 1. Buscar fotos via n8n
     emit(jobId, { event: 'log', tp: 'info', msg: '🔍 Consultando banco de dados via n8n...' });
@@ -170,7 +170,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
     const fotos = n8nResp.body.fotos || [];
     console.log(`[DEBUG] Resposta n8n: ${JSON.stringify(n8nResp.body)}`);
     if (fotos.length === 0) {
-      emit(jobId, { event: 'log', tp: 'skip', msg: '⚠️ Nenhuma imagem encontrada fora de 1000×1000.' });
+      emit(jobId, { event: 'log', tp: 'skip', msg: `⚠️ Nenhuma imagem encontrada fora de ${width}×${height}.` });
       emit(jobId, { event: 'complete', total: 0, ok: 0, erros: 0, results: [] });
       return;
     }
@@ -205,8 +205,8 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld }) {
         if (!srcUrl) throw new Error('URL da imagem ausente');
 
         // Resize
-        emit(jobId, { event: 'log', tp: 'info', msg: '   📐 Redimensionando para 1000×1000...' });
-        const resized = await resizeAndSave(srcUrl);
+        emit(jobId, { event: 'log', tp: 'info', msg: `   📐 Redimensionando para ${width}×${height}...` });
+        const resized = await resizeAndSave(srcUrl, width, height);
         tempFilename  = resized.filename;
 
         // POST nova foto
@@ -349,7 +349,12 @@ const server = http.createServer(async (req, res) => {
 
       const jobId = createJob();
       // Processar em background (não bloqueia o response)
-      procesarJob(jobId, { oi, skus, token, deleteOld });
+      const width  = parseInt(body.width, 10)  || 1000;
+      const height = parseInt(body.height, 10) || 1000;
+      // Validar dimensões permitidas
+      const allowed = ['800x1200', '1000x1000', '1000x1500'];
+      if (!allowed.includes(`${width}x${height}`)) throw new Error(`Dimensão ${width}x${height} não permitida. Use: ${allowed.join(', ')}`);
+      procesarJob(jobId, { oi, skus, token, deleteOld, width, height });
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, jobId }));
