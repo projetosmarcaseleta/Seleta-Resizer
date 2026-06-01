@@ -352,7 +352,7 @@ const server = http.createServer(async (req, res) => {
       const width  = parseInt(body.width, 10)  || 1000;
       const height = parseInt(body.height, 10) || 1000;
       // Validar dimensões permitidas
-      const allowed = ['800x1200', '1000x1000', '1000x1500'];
+      const allowed = ['750x1000', '1000x1000', '667x1000'];
       if (!allowed.includes(`${width}x${height}`)) throw new Error(`Dimensão ${width}x${height} não permitida. Use: ${allowed.join(', ')}`);
       procesarJob(jobId, { oi, skus, token, deleteOld, width, height });
 
