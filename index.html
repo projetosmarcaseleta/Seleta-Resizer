@@ -531,10 +531,7 @@
       height: 33px;
     }
 
-    .dim-preview[data-ratio="3:4"]::after {
-      width: 24px;
-      height: 32px;
-    }
+
 
     .dim-option input:checked + .dim-card .dim-preview::after {
       opacity: .7;
@@ -804,12 +801,12 @@
     <div class="card-title">Dimensão do Redimensionamento</div>
     <div class="dim-group">
       <label class="dim-option">
-        <input type="radio" name="dimension" value="750x1000" onchange="setDimension(750, 1000)">
+        <input type="radio" name="dimension" value="800x1200" onchange="setDimension(800, 1200)">
         <div class="dim-card">
-          <div class="dim-preview" data-ratio="3:4"></div>
-          <div class="dim-size">750 × 1000</div>
+          <div class="dim-preview" data-ratio="2:3"></div>
+          <div class="dim-size">800 × 1200</div>
           <div class="dim-label">Retrato</div>
-          <div class="dim-ratio">3:4</div>
+          <div class="dim-ratio">2:3</div>
         </div>
       </label>
       <label class="dim-option">
@@ -822,11 +819,11 @@
         </div>
       </label>
       <label class="dim-option">
-        <input type="radio" name="dimension" value="667x1000" onchange="setDimension(667, 1000)">
+        <input type="radio" name="dimension" value="1000x1500" onchange="setDimension(1000, 1500)">
         <div class="dim-card">
           <div class="dim-preview" data-ratio="2:3"></div>
-          <div class="dim-size">667 × 1000</div>
-          <div class="dim-label">Retrato Longo</div>
+          <div class="dim-size">1000 × 1500</div>
+          <div class="dim-label">Retrato Grande</div>
           <div class="dim-ratio">2:3</div>
         </div>
       </label>
