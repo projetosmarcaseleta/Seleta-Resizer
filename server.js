@@ -192,7 +192,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, he
       const isMain   = foto.main_photo === '1' || foto.main_photo === 1;
       const idx      = foto.product_photo_index ?? 0;
       const variacao = foto.variacao || null;  // descrição da variação (ex: "Azul", "P")
-      const temVariacaoVisual = foto.tem_variacao_visual ?? false;
+      const temVariacaoVisual = foto.tem_variacao_visual === true || foto.tem_variacao_visual === 'true' || foto.tem_variacao_visual === 1 || foto.tem_variacao_visual === '1';
       const label    = `[${i+1}/${fotos.length}] Foto ${foto.id_foto} — SKU ${foto.sku || '—'}${variacao ? ` — Var: ${variacao}` : ''}`;
 
       emit(jobId, { event: 'log', tp: 'info', msg: `⏳ ${label}` });
