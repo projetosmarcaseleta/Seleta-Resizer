@@ -15,7 +15,8 @@ const N8N_PORT    = 80;
 const N8N_PATH    = '/webhook/resizer/buscar-imagens';
 const AM_HOST     = 'api.anymarket.com.br';
 const SELF_BASE   = 'https://app.marcaseleta.shop/resizer';
-const RATE_MS     = 700;
+const RATE_MS     = 200;
+const CONCURRENCY = 5;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -33,9 +34,19 @@ const jobs = new Map();
 
 function createJob() {
   const id = `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  jobs.set(id, { clients: [], done: false });
+  jobs.set(id, { clients: [], done: false, heartbeat: null });
   setTimeout(() => jobs.delete(id), 60 * 60 * 1000); // limpar após 1h
   return id;
+}
+
+function startHeartbeat(jobId) {
+  const job = jobs.get(jobId);
+  if (!job) return;
+  job.heartbeat = setInterval(() => {
+    const j = jobs.get(jobId);
+    if (!j || j.done) { clearInterval(job.heartbeat); return; }
+    j.clients.forEach(r => { try { r.write(': heartbeat\n\n'); } catch {} });
+  }, 15000);
 }
 
 function emit(jobId, data) {
@@ -45,6 +56,7 @@ function emit(jobId, data) {
   job.clients.forEach(r => { try { r.write(msg); } catch {} });
   if (data.event === 'complete' || data.event === 'error') {
     job.done = true;
+    if (job.heartbeat) clearInterval(job.heartbeat);
     setTimeout(() => job.clients.forEach(r => { try { r.end(); } catch {} }), 200);
   }
 }
@@ -146,12 +158,8 @@ async function resizeAndSave(srcUrl, width = 1000, height = 1000, fitMode = 'cov
 
   const resized = await sharp(dl.body)
     .resize(width, height, resizeOpts)
-    .jpeg({ quality: 95 })
+    .jpeg({ quality: 90 })
     .toBuffer();
-
-  const meta = await sharp(resized).metadata();
-  if (meta.width !== width || meta.height !== height)
-    throw new Error(`Dimensão incorreta: ${meta.width}x${meta.height}`);
 
   const filename = `resize_${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
   const filepath = path.join(TEMP_DIR, filename);
@@ -161,10 +169,100 @@ async function resizeAndSave(srcUrl, width = 1000, height = 1000, fitMode = 'cov
   return { url: `${SELF_BASE}/temp/${filename}`, filename };
 }
 
-// ── Processamento do job ─────────────────────────────────────
+// ── Processamento paralelo ───────────────────────────────────
+async function processOneFoto(jobId, foto, index, total, { token, deleteOld, width, height, fitMode }) {
+  const srcUrl   = foto.standard_url || foto.original_url;
+  const isMain   = foto.main_photo === '1' || foto.main_photo === 1;
+  const idx      = foto.product_photo_index ?? 0;
+  const variacao = foto.variacao || null;
+  const temVariacaoVisual = foto.tem_variacao_visual === true || foto.tem_variacao_visual === 'true' || foto.tem_variacao_visual === 1 || foto.tem_variacao_visual === '1';
+  const label    = `[${index+1}/${total}] Foto ${foto.id_foto} — SKU ${foto.sku || '—'}${variacao ? ` — Var: ${variacao}` : ''}`;
+
+  emit(jobId, { event: 'log', tp: 'info', msg: `⏳ ${label}` });
+
+  const result = {
+    sku: foto.sku, id_produto: foto.id_produto, id_foto: foto.id_foto,
+    variacao: variacao, url_original: srcUrl, nova_url: null, status: 'ERRO', motivo_erro: null,
+    _isMain: isMain, _idx: idx, _variacao: variacao,
+  };
+
+  try {
+    if (!srcUrl) throw new Error('URL da imagem ausente');
+
+    emit(jobId, { event: 'log', tp: 'info', msg: `   📐 Redimensionando para ${width}×${height} (${fitMode === 'cover' ? 'preencher' : 'ajustar'})...` });
+    const resized = await resizeAndSave(srcUrl, width, height, fitMode);
+
+    emit(jobId, { event: 'log', tp: 'info', msg: `   📤 Enviando nova foto ao AnyMarket... (URL: ${resized.url})` });
+
+    const postBody = { url: resized.url, index: idx, main: false };
+    if (temVariacaoVisual && variacao) {
+      postBody.variation = variacao;
+      emit(jobId, { event: 'log', tp: 'info', msg: `   🏷️  Variação visual: ${variacao}` });
+    }
+
+    let postR;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      postR = await jsonRequest('POST', AM_HOST,
+        `/v2/products/${foto.id_produto}/images`,
+        postBody,
+        { gumgaToken: token }
+      );
+      console.log(`[DEBUG] POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
+
+      if (postR.status < 400 && postR.body.id) break;
+
+      if (attempt < 2) {
+        emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ POST falhou (tentativa ${attempt}), aguardando 3s para retry...` });
+        await sleep(3000);
+      }
+    }
+    if (postR.status >= 400 || !postR.body.id)
+      throw new Error(`POST ${postR.status}: ${JSON.stringify(postR.body).slice(0,200)}`);
+
+    const newPhotoId = postR.body.id;
+    result.nova_url = resized.url;
+    result._newPhotoId = newPhotoId;
+
+    emit(jobId, { event: 'log', tp: 'info', msg: `   🔢 Ajustando índice (${idx}) e main (${isMain})...` });
+    try {
+      const putBody = { id: Number(newPhotoId), index: idx, main: isMain };
+      if (temVariacaoVisual && variacao) putBody.variation = variacao;
+      await jsonRequest('PUT', AM_HOST,
+        `/v2/products/${foto.id_produto}/images`,
+        putBody,
+        { gumgaToken: token }
+      );
+    } catch (putErr) {
+      emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ PUT ignorado: ${putErr.message}` });
+    }
+
+    if (deleteOld) {
+      emit(jobId, { event: 'log', tp: 'info', msg: '   🗑️  Removendo foto antiga...' });
+      try {
+        await jsonRequest('DELETE', AM_HOST,
+          `/v2/products/${foto.id_produto}/images/${foto.id_foto}`,
+          null,
+          { gumgaToken: token }
+        );
+        result._oldDeleted = true;
+      } catch (delErr) {
+        emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ DELETE ignorado: ${delErr.message}` });
+      }
+    }
+
+    result.status = 'SUCESSO';
+    emit(jobId, { event: 'log', tp: 'ok', msg: `   ✅ Concluída!` });
+
+  } catch (err) {
+    result.motivo_erro = err.message;
+    emit(jobId, { event: 'log', tp: 'err', msg: `   ❌ ${err.message}` });
+  }
+
+  return result;
+}
+
 async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000, fitMode = 'cover' }) {
   try {
-    // 1. Buscar fotos via n8n
     emit(jobId, { event: 'log', tp: 'info', msg: '🔍 Consultando banco de dados via n8n...' });
     const n8nResp = await jsonRequest('POST', N8N_HOST, N8N_PATH, { oi, skus }, {}, N8N_PORT);
 
@@ -174,130 +272,50 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, he
     }
 
     const fotos = n8nResp.body.fotos || [];
-    console.log(`[DEBUG] Resposta n8n: ${JSON.stringify(n8nResp.body)}`);
+    console.log(`[DEBUG] Resposta n8n: ${JSON.stringify(n8nResp.body).slice(0, 500)}`);
     if (fotos.length === 0) {
       emit(jobId, { event: 'log', tp: 'skip', msg: `⚠️ Nenhuma imagem encontrada fora de ${width}×${height}.` });
       emit(jobId, { event: 'complete', total: 0, ok: 0, erros: 0, results: [] });
       return;
     }
 
-    emit(jobId, { event: 'log', tp: 'info', msg: `📸 ${fotos.length} foto(s) encontrada(s). Iniciando...` });
+    emit(jobId, { event: 'log', tp: 'info', msg: `📸 ${fotos.length} foto(s) encontrada(s). Processando com ${CONCURRENCY} workers...` });
     emit(jobId, { event: 'progress', total: fotos.length, done: 0, ok: 0, erros: 0 });
 
+    // Iniciar heartbeat SSE
+    startHeartbeat(jobId);
+
     const results = [];
+    let doneCount = 0;
 
-    for (let i = 0; i < fotos.length; i++) {
-      const foto     = fotos[i];
-      const srcUrl   = foto.standard_url || foto.original_url;
-      const isMain   = foto.main_photo === '1' || foto.main_photo === 1;
-      const idx      = foto.product_photo_index ?? 0;
-      const variacao = foto.variacao || null;  // descrição da variação (ex: "Azul", "P")
-      const temVariacaoVisual = foto.tem_variacao_visual === true || foto.tem_variacao_visual === 'true' || foto.tem_variacao_visual === 1 || foto.tem_variacao_visual === '1';
-      const label    = `[${i+1}/${fotos.length}] Foto ${foto.id_foto} — SKU ${foto.sku || '—'}${variacao ? ` — Var: ${variacao}` : ''}`;
+    // Pool de concorrência: processa até CONCURRENCY fotos simultaneamente
+    const queue = fotos.map((foto, i) => ({ foto, index: i }));
+    const opts = { token, deleteOld, width, height, fitMode };
 
-      emit(jobId, { event: 'log', tp: 'info', msg: `⏳ ${label}` });
+    async function worker() {
+      while (queue.length > 0) {
+        const item = queue.shift();
+        if (!item) break;
 
-      const result = {
-        sku: foto.sku, id_produto: foto.id_produto, id_foto: foto.id_foto,
-        variacao: variacao, url_original: srcUrl, nova_url: null, status: 'ERRO', motivo_erro: null,
-        // para rollback
-        _isMain: isMain, _idx: idx, _variacao: variacao,
-      };
+        const result = await processOneFoto(jobId, item.foto, item.index, fotos.length, opts);
+        results.push(result);
+        doneCount++;
 
-      let tempFilename = null;
-      let newPhotoId   = null;
+        const okN  = results.filter(r => r.status === 'SUCESSO').length;
+        const errN = results.length - okN;
+        emit(jobId, { event: 'progress', total: fotos.length, done: doneCount, ok: okN, erros: errN });
 
-      try {
-        if (!srcUrl) throw new Error('URL da imagem ausente');
-
-        // Resize
-        emit(jobId, { event: 'log', tp: 'info', msg: `   📐 Redimensionando para ${width}×${height} (${fitMode === 'cover' ? 'preencher' : 'ajustar'})...` });
-        const resized = await resizeAndSave(srcUrl, width, height, fitMode);
-        tempFilename  = resized.filename;
-
-        // POST nova foto
-        emit(jobId, { event: 'log', tp: 'info', msg: `   📤 Enviando nova foto ao AnyMarket... (URL: ${resized.url})` });
-
-        // Pequeno delay para garantir que o arquivo está acessível via HTTP
-        await sleep(500);
-
-        // Montar body do POST — incluir variation APENAS se tem_variacao_visual === true
-        const postBody = { url: resized.url, index: idx, main: false };
-        if (temVariacaoVisual && variacao) {
-          postBody.variation = variacao;
-          emit(jobId, { event: 'log', tp: 'info', msg: `   🏷️  Variação visual: ${variacao}` });
-        }
-
-        let postR;
-        for (let attempt = 1; attempt <= 2; attempt++) {
-          postR = await jsonRequest('POST', AM_HOST,
-            `/v2/products/${foto.id_produto}/images`,
-            postBody,
-            { gumgaToken: token }
-          );
-          console.log(`[DEBUG] POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
-
-          if (postR.status < 400 && postR.body.id) break; // sucesso
-
-          if (attempt < 2) {
-            emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ POST falhou (tentativa ${attempt}), aguardando 3s para retry...` });
-            await sleep(3000);
-          }
-        }
-        if (postR.status >= 400 || !postR.body.id)
-          throw new Error(`POST ${postR.status}: ${JSON.stringify(postR.body).slice(0,200)}`);
-
-        newPhotoId    = postR.body.id;
-        result.nova_url = resized.url;
-        result._newPhotoId = newPhotoId;
-
-        // PUT index + main
-        emit(jobId, { event: 'log', tp: 'info', msg: `   🔢 Ajustando índice (${idx}) e main (${isMain})...` });
-        try {
-          const putBody = { id: Number(newPhotoId), index: idx, main: isMain };
-          if (temVariacaoVisual && variacao) putBody.variation = variacao;
-          await jsonRequest('PUT', AM_HOST,
-            `/v2/products/${foto.id_produto}/images`,
-            putBody,
-            { gumgaToken: token }
-          );
-        } catch (putErr) {
-          emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ PUT ignorado: ${putErr.message}` });
-        }
-
-        // DELETE antiga
-        if (deleteOld) {
-          emit(jobId, { event: 'log', tp: 'info', msg: '   🗑️  Removendo foto antiga...' });
-          try {
-            await jsonRequest('DELETE', AM_HOST,
-              `/v2/products/${foto.id_produto}/images/${foto.id_foto}`,
-              null,
-              { gumgaToken: token }
-            );
-            result._oldDeleted = true;
-          } catch (delErr) {
-            emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ DELETE ignorado: ${delErr.message}` });
-          }
-        }
-
-        result.status = 'SUCESSO';
-        emit(jobId, { event: 'log', tp: 'ok', msg: `   ✅ Concluída!` });
-
-      } catch (err) {
-        result.motivo_erro = err.message;
-        emit(jobId, { event: 'log', tp: 'err', msg: `   ❌ ${err.message}` });
+        // Pequeno delay entre cada foto para não sobrecarregar a API
+        if (queue.length > 0) await sleep(RATE_MS);
       }
-      // NÃO deletar o arquivo temporário aqui!
-      // O AnyMarket faz download assíncrono da URL fornecida.
-      // O arquivo será limpo automaticamente após 10 minutos pelo setTimeout em resizeAndSave().
-
-      results.push(result);
-      const okN  = results.filter(r => r.status === 'SUCESSO').length;
-      const errN = results.length - okN;
-      emit(jobId, { event: 'progress', total: fotos.length, done: i + 1, ok: okN, erros: errN });
-
-      if (i < fotos.length - 1) await sleep(RATE_MS);
     }
+
+    // Iniciar N workers em paralelo
+    const workers = [];
+    for (let w = 0; w < Math.min(CONCURRENCY, fotos.length); w++) {
+      workers.push(worker());
+    }
+    await Promise.all(workers);
 
     const ok   = results.filter(r => r.status === 'SUCESSO').length;
     const erros = results.length - ok;
@@ -382,6 +400,10 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify({ error: 'Job não encontrado' }));
       return;
     }
+
+    // Desabilitar timeout para conexões SSE
+    req.setTimeout(0);
+    res.setTimeout(0);
 
     res.writeHead(200, {
       'Content-Type'  : 'text/event-stream',
@@ -495,6 +517,10 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
+// Aumentar timeouts para suportar conexões SSE longas
+server.timeout = 0;          // Sem timeout para requests (SSE pode durar horas)
+server.keepAliveTimeout = 0; // Manter conexões keep-alive indefinidamente
+
 server.listen(PORT, () => {
-  console.log(`\n  ✅ Seleta Resizer rodando na porta ${PORT}\n`);
+  console.log(`\n  ✅ Seleta Resizer rodando na porta ${PORT} (concorrência: ${CONCURRENCY})\n`);
 });

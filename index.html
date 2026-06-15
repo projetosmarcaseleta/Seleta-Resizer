@@ -1132,7 +1132,7 @@
     function addLog(tp, msg) {
       show('logPanel');
       const list = document.getElementById('logList');
-      while (list.children.length >= 300) list.removeChild(list.firstChild);
+      while (list.children.length >= 200) list.removeChild(list.firstChild);
       const now = new Date().toLocaleTimeString('pt-BR');
       const type = TP[tp] || 'info';
       const d = document.createElement('div');
@@ -1171,34 +1171,60 @@
     function connectSSE(jobId) {
       // Forçar URL absoluta para o EventSource também
       const sseUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/progress/' : '/api/progress/';
-      const es = new EventSource(sseUrl + jobId);
-      activeSSE = es;
-      es.onmessage = (e) => {
-        let d; try { d = JSON.parse(e.data) } catch { return }
-        if (d.event === 'log') addLog(d.tp || 'info', d.msg);
-        else if (d.event === 'progress') {
-          stats.total = d.total; stats.ok = d.ok; stats.err = d.erros;
-          setProgress(d.done, d.total);
-        } else if (d.event === 'complete') {
-          es.close(); activeSSE = null;
-          const res = d.results || [];
-          res.forEach(r => {
-            reportLog.push({ sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto, variacao: r.variacao || '', oldUrl: r.url_original, newPhotoId: r._newPhotoId || '', newUrl: r.nova_url || '', status: r.status, motivo: r.motivo_erro || '' });
-            if (r.status === 'SUCESSO' && r._newPhotoId) rollbackLog.push({ prodId: r.id_produto, oldPhotoId: r.id_foto, restoreUrl: r.url_original, newPhotoId: r._newPhotoId, index: r._idx ?? 0, isMain: r._isMain ?? false, wasDeleted: r._oldDeleted ?? false, variacao: r._variacao || '' });
-          });
-          stats.total = d.total; stats.ok = d.ok; stats.err = d.erros; stats.skip = 0;
-          setProgress(d.total, d.total); setStatus('done', 'Concluido');
-          addLog('ok', `Finalizado: ${d.ok} sucesso(s), ${d.erros} erro(s).`);
-          finalize(false);
-        } else if (d.event === 'error') {
-          es.close(); activeSSE = null; addLog('err', `Erro fatal: ${d.msg}`);
-          setStatus('error', 'Erro'); showToast('\u274C', d.msg); finalize(false);
-        }
-      };
-      es.onerror = () => {
-        if (!activeSSE) return; addLog('err', 'Conexao SSE perdida.');
-        es.close(); activeSSE = null; setStatus('error', 'Conexao perdida'); finalize(false);
-      };
+      let retryCount = 0;
+      const MAX_RETRIES = 10;
+
+      function connect() {
+        const es = new EventSource(sseUrl + jobId);
+        activeSSE = es;
+        es.onopen = () => {
+          if (retryCount > 0) {
+            addLog('ok', `Conexão SSE restabelecida (após ${retryCount} tentativa(s)).`);
+          }
+          retryCount = 0;
+        };
+        es.onmessage = (e) => {
+          let d; try { d = JSON.parse(e.data) } catch { return }
+          if (d.event === 'log') addLog(d.tp || 'info', d.msg);
+          else if (d.event === 'progress') {
+            stats.total = d.total; stats.ok = d.ok; stats.err = d.erros;
+            setProgress(d.done, d.total);
+          } else if (d.event === 'complete') {
+            es.close(); activeSSE = null;
+            const res = d.results || [];
+            res.forEach(r => {
+              reportLog.push({ sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto, variacao: r.variacao || '', oldUrl: r.url_original, newPhotoId: r._newPhotoId || '', newUrl: r.nova_url || '', status: r.status, motivo: r.motivo_erro || '' });
+              if (r.status === 'SUCESSO' && r._newPhotoId) rollbackLog.push({ prodId: r.id_produto, oldPhotoId: r.id_foto, restoreUrl: r.url_original, newPhotoId: r._newPhotoId, index: r._idx ?? 0, isMain: r._isMain ?? false, wasDeleted: r._oldDeleted ?? false, variacao: r._variacao || '' });
+            });
+            stats.total = d.total; stats.ok = d.ok; stats.err = d.erros; stats.skip = 0;
+            setProgress(d.total, d.total); setStatus('done', 'Concluido');
+            addLog('ok', `Finalizado: ${d.ok} sucesso(s), ${d.erros} erro(s).`);
+            finalize(false);
+          } else if (d.event === 'error') {
+            es.close(); activeSSE = null; addLog('err', `Erro fatal: ${d.msg}`);
+            setStatus('error', 'Erro'); showToast('\u274C', d.msg); finalize(false);
+          }
+        };
+        es.onerror = () => {
+          es.close();
+          if (!running) { activeSSE = null; return; }
+          retryCount++;
+          if (retryCount > MAX_RETRIES) {
+            activeSSE = null;
+            addLog('err', `Conexão SSE perdida após ${MAX_RETRIES} tentativas. O processamento continua no servidor.`);
+            setStatus('error', 'Conexão perdida');
+            showToast('\u26A0\uFE0F', 'Conexão perdida. O processamento continua no servidor.');
+            return;
+          }
+          const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 30000);
+          addLog('skip', `Conexão SSE perdida. Reconectando em ${Math.round(delay/1000)}s... (tentativa ${retryCount}/${MAX_RETRIES})`);
+          setTimeout(() => {
+            if (running) connect();
+          }, delay);
+        };
+      }
+
+      connect();
     }
     async function startProcess() {
       const token = document.getElementById('token').value.trim();
