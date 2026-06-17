@@ -142,6 +142,35 @@ function readBody(req) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// ── Rate Limiter AnyMarket ───────────────────────────────────
+const amQueue = [];
+let amProcessing = false;
+
+function scheduleAnyMarketRequest(fn) {
+  return new Promise((resolve, reject) => {
+    amQueue.push({ fn, resolve, reject });
+    processAmQueue();
+  });
+}
+
+async function processAmQueue() {
+  if (amProcessing) return;
+  amProcessing = true;
+  while (amQueue.length > 0) {
+    const { fn, resolve, reject } = amQueue.shift();
+    // Executa a requisição assincronamente e já vai para o próximo passo (await sleep)
+    fn().then(resolve).catch(reject);
+    await sleep(110); // Margem de segurança: max ~9 requisições por segundo
+  }
+  amProcessing = false;
+}
+
+function amRequest(method, reqPath, body, token) {
+  return scheduleAnyMarketRequest(() => 
+    jsonRequest(method, AM_HOST, reqPath, body, { gumgaToken: token })
+  );
+}
+
 // ── Resize + Save ────────────────────────────────────────────
 async function resizeAndSave(srcUrl, width = 1000, height = 1000, fitMode = 'cover') {
   if (!sharp) throw new Error('sharp não instalado no servidor');
@@ -201,19 +230,16 @@ async function processOneFoto(jobId, foto, index, total, { token, deleteOld, wid
     }
 
     let postR;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      postR = await jsonRequest('POST', AM_HOST,
-        `/v2/products/${foto.id_produto}/images`,
-        postBody,
-        { gumgaToken: token }
-      );
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      postR = await amRequest('POST', `/v2/products/${foto.id_produto}/images`, postBody, token);
       console.log(`[DEBUG] POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
 
       if (postR.status < 400 && postR.body.id) break;
 
-      if (attempt < 2) {
-        emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ POST falhou (tentativa ${attempt}), aguardando 3s para retry...` });
-        await sleep(3000);
+      if (attempt < 3) {
+        const delay = postR.status === 429 ? 3000 * attempt : 3000;
+        emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ POST falhou (HTTP ${postR.status}), aguardando ${delay/1000}s para retry...` });
+        await sleep(delay);
       }
     }
     if (postR.status >= 400 || !postR.body.id)
@@ -227,11 +253,13 @@ async function processOneFoto(jobId, foto, index, total, { token, deleteOld, wid
     try {
       const putBody = { id: Number(newPhotoId), index: idx, main: isMain };
       if (temVariacaoVisual && variacao) putBody.variation = variacao;
-      await jsonRequest('PUT', AM_HOST,
-        `/v2/products/${foto.id_produto}/images`,
-        putBody,
-        { gumgaToken: token }
-      );
+      let putR = await amRequest('PUT', `/v2/products/${foto.id_produto}/images`, putBody, token);
+      if (putR.status === 429) {
+         emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ PUT Rate limit, aguardando...` });
+         await sleep(3000);
+         putR = await amRequest('PUT', `/v2/products/${foto.id_produto}/images`, putBody, token);
+      }
+      if (putR.status >= 400) throw new Error(`HTTP ${putR.status}`);
     } catch (putErr) {
       emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ PUT ignorado: ${putErr.message}` });
     }
@@ -239,11 +267,13 @@ async function processOneFoto(jobId, foto, index, total, { token, deleteOld, wid
     if (deleteOld) {
       emit(jobId, { event: 'log', tp: 'info', msg: '   🗑️  Removendo foto antiga...' });
       try {
-        await jsonRequest('DELETE', AM_HOST,
-          `/v2/products/${foto.id_produto}/images/${foto.id_foto}`,
-          null,
-          { gumgaToken: token }
-        );
+        let delR = await amRequest('DELETE', `/v2/products/${foto.id_produto}/images/${foto.id_foto}`, null, token);
+        if (delR.status === 429) {
+           emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ DELETE Rate limit, aguardando...` });
+           await sleep(3000);
+           delR = await amRequest('DELETE', `/v2/products/${foto.id_produto}/images/${foto.id_foto}`, null, token);
+        }
+        if (delR.status >= 400 && delR.status !== 404) throw new Error(`HTTP ${delR.status}`);
         result._oldDeleted = true;
       } catch (delErr) {
         emit(jobId, { event: 'log', tp: 'skip', msg: `   ⚠️ DELETE ignorado: ${delErr.message}` });
