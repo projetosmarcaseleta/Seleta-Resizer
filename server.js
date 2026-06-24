@@ -399,7 +399,7 @@ const server = http.createServer(async (req, res) => {
       if (!oi)    throw new Error('Campo "oi" é obrigatório');
       if (!token) throw new Error('Campo "token" (gumgaToken) é obrigatório');
       if (!/^[\w.\-]+$/.test(oi)) throw new Error('OI contém caracteres inválidos');
-      skus = skus.filter(s => /^[\w.\-]+$/.test(s));
+      skus = skus.filter(s => /^[\w.\-\/]+$/.test(s));
 
       const jobId = createJob();
       // Processar em background (não bloqueia o response)
