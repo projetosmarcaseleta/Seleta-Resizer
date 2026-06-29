@@ -571,6 +571,7 @@
       flex: 1;
       position: relative;
       cursor: pointer;
+      display: flex;
     }
 
     .fit-option input[type="radio"] {
@@ -588,6 +589,7 @@
       border: 2px solid var(--border);
       border-radius: 10px;
       transition: all .25s ease;
+      width: 100%;
     }
 
     .fit-option input:checked + .fit-card {
@@ -912,16 +914,6 @@
     <div class="card-title">Modo de Ajuste</div>
     <div class="fit-group">
       <label class="fit-option">
-        <input type="radio" name="fitMode" value="cover" onchange="setFitMode('cover')">
-        <div class="fit-card">
-          <span class="fit-icon">🖼️</span>
-          <div class="fit-info">
-            <span class="fit-name">Preencher</span>
-            <span class="fit-desc">Redimensiona a imagem para cobrir toda a área. Se as proporções forem diferentes, as bordas excedentes da foto original serão cortadas para evitar faixas brancas.</span>
-          </div>
-        </div>
-      </label>
-      <label class="fit-option">
         <input type="radio" name="fitMode" value="contain" checked onchange="setFitMode('contain')">
         <div class="fit-card">
           <span class="fit-icon">📏</span>
@@ -930,6 +922,16 @@
             <span class="fit-desc">Redimensiona a imagem para caber inteira dentro do tamanho escolhido, preservando todos os detalhes da foto original e preenchendo as sobras com fundo branco.</span>
           </div>
           <span class="fit-badge fit-badge-rec">Recomendado</span>
+        </div>
+      </label>
+      <label class="fit-option">
+        <input type="radio" name="fitMode" value="cover" onchange="setFitMode('cover')">
+        <div class="fit-card">
+          <span class="fit-icon">🖼️</span>
+          <div class="fit-info">
+            <span class="fit-name">Preencher</span>
+            <span class="fit-desc">Redimensiona a imagem para cobrir toda a área. Se as proporções forem diferentes, as bordas excedentes da foto original serão cortadas para evitar faixas brancas.</span>
+          </div>
         </div>
       </label>
     </div>
