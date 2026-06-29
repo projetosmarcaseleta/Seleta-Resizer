@@ -291,7 +291,7 @@ async function processOneFoto(jobId, foto, index, total, { token, deleteOld, wid
   return result;
 }
 
-async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000, fitMode = 'cover' }) {
+async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000, fitMode = 'contain' }) {
   try {
     emit(jobId, { event: 'log', tp: 'info', msg: '🔍 Consultando banco de dados via n8n...' });
     const n8nResp = await jsonRequest('POST', N8N_HOST, N8N_PATH, { oi, skus }, {}, N8N_PORT);
@@ -390,7 +390,7 @@ const server = http.createServer(async (req, res) => {
       const body = JSON.parse((await readBody(req)).toString());
       const oi       = (body.oi    ?? '').trim();
       const token    = (body.token ?? '').trim();
-      const deleteOld = body.deleteOld !== false;
+      const deleteOld = body.deleteOld === true;
       let skus = Array.isArray(body.skus) ? body.skus
                : typeof body.skus === 'string' && body.skus.trim()
                  ? body.skus.split(/[\n,]/).map(s => s.trim()).filter(Boolean)
@@ -408,7 +408,7 @@ const server = http.createServer(async (req, res) => {
       // Validar dimensões permitidas
       const allowed = ['800x1200', '1000x1000', '1000x1500'];
       if (!allowed.includes(`${width}x${height}`)) throw new Error(`Dimensão ${width}x${height} não permitida. Use: ${allowed.join(', ')}`);
-      const fitMode = (body.fitMode === 'contain') ? 'contain' : 'cover';
+      const fitMode = (body.fitMode === 'cover') ? 'cover' : 'contain';
       procesarJob(jobId, { oi, skus, token, deleteOld, width, height, fitMode });
 
       res.writeHead(200, { 'Content-Type': 'application/json' });

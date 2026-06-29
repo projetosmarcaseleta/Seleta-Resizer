@@ -912,24 +912,24 @@
     <div class="card-title">Modo de Ajuste</div>
     <div class="fit-group">
       <label class="fit-option">
-        <input type="radio" name="fitMode" value="cover" checked onchange="setFitMode('cover')">
+        <input type="radio" name="fitMode" value="cover" onchange="setFitMode('cover')">
         <div class="fit-card">
           <span class="fit-icon">🖼️</span>
           <div class="fit-info">
             <span class="fit-name">Preencher</span>
-            <span class="fit-desc">Preenche todo o espaço, cortando bordas se necessário</span>
+            <span class="fit-desc">Redimensiona a imagem para cobrir toda a área. Se as proporções forem diferentes, as bordas excedentes da foto original serão cortadas para evitar faixas brancas.</span>
           </div>
-          <span class="fit-badge fit-badge-rec">Recomendado</span>
         </div>
       </label>
       <label class="fit-option">
-        <input type="radio" name="fitMode" value="contain" onchange="setFitMode('contain')">
+        <input type="radio" name="fitMode" value="contain" checked onchange="setFitMode('contain')">
         <div class="fit-card">
           <span class="fit-icon">📏</span>
           <div class="fit-info">
             <span class="fit-name">Ajustar</span>
-            <span class="fit-desc">Encaixa a imagem completa com fundo branco</span>
+            <span class="fit-desc">Redimensiona a imagem para caber inteira dentro do tamanho escolhido, preservando todos os detalhes da foto original e preenchendo as sobras com fundo branco.</span>
           </div>
+          <span class="fit-badge fit-badge-rec">Recomendado</span>
         </div>
       </label>
     </div>
@@ -938,7 +938,7 @@
   <!-- Options -->
   <div class="card">
     <div class="toggle-row" onclick="toggleDelete()">
-      <div class="toggle-track on" id="toggleDeleteOld"></div>
+      <div class="toggle-track" id="toggleDeleteOld"></div>
       <div>
         <div class="toggle-label">Deletar foto antiga apos upload</div>
         <div class="toggle-hint">Recomendado: mantem o catalogo limpo.</div>
@@ -1070,9 +1070,9 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    let deleteOld = true, running = false, activeSSE = null;
+    let deleteOld = false, running = false, activeSSE = null;
     let selectedWidth = 1000, selectedHeight = 1000;
-    let fitMode = 'cover';
+    let fitMode = 'contain';
     let stats = { total: 0, ok: 0, skip: 0, err: 0 }, rollbackLog = [], reportLog = [];
 
     window.addEventListener('DOMContentLoaded', () => {
