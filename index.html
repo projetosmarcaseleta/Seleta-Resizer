@@ -166,6 +166,10 @@
       border-color: var(--accent)
     }
 
+    .toggle-row:last-child {
+      margin-bottom: 0
+    }
+
     .toggle-track {
       width: 40px;
       height: 22px;
@@ -304,11 +308,27 @@
       transition: width .4s
     }
 
+    .progress-fill.success {
+      background: linear-gradient(90deg, #16a34a, #22c55e)
+    }
+
+    .progress-fill.has-error {
+      background: linear-gradient(90deg, #b91c1c, #ef4444)
+    }
+
     .progress-info {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: .78rem;
       color: var(--muted)
+    }
+
+    .eta-text {
+      font-size: .72rem;
+      color: var(--accent2);
+      opacity: .85;
+      margin-right: 8px
     }
 
     .stats {
@@ -345,13 +365,86 @@
       color: var(--amber)
     }
 
+    /* ── Log Panel ── */
+    .log-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap
+    }
+
+    .log-filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: .7rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: inherit
+    }
+
+    .log-filter-btn:hover {
+      border-color: var(--accent2);
+      color: var(--text)
+    }
+
+    .log-filter-btn.active {
+      background: rgba(124, 110, 245, .15);
+      border-color: var(--accent);
+      color: var(--accent2)
+    }
+
+    .log-filter-btn.active-err {
+      background: rgba(239, 68, 68, .12);
+      border-color: rgba(239, 68, 68, .5);
+      color: var(--red)
+    }
+
+    .log-filter-btn.active-skip {
+      background: rgba(245, 158, 11, .12);
+      border-color: rgba(245, 158, 11, .5);
+      color: var(--amber)
+    }
+
+    .log-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 6px
+    }
+
+    .log-action-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: .7rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: inherit
+    }
+
+    .log-action-btn:hover {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--accent2)
+    }
+
     .log-wrap {
-      max-height: 320px;
+      max-height: 380px;
       overflow-y: auto;
       background: var(--surface);
       border-radius: 8px;
       padding: 8px;
-      margin-top: 12px
+      margin-top: 0
     }
 
     .log-wrap::-webkit-scrollbar {
@@ -404,6 +497,25 @@
       margin-left: auto
     }
 
+    .log-counter-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle
+    }
+
+    .log-counter-err {
+      background: rgba(239, 68, 68, .15);
+      color: var(--red)
+    }
+
+    .log-counter-skip {
+      background: rgba(245, 158, 11, .12);
+      color: var(--amber)
+    }
+
     .summary {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -441,6 +553,75 @@
 
     .sum-skip .val {
       color: var(--amber)
+    }
+
+    /* ── Error Panel ── */
+    .error-table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, .2)
+    }
+
+    .error-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .78rem
+    }
+
+    .error-table th {
+      text-align: left;
+      padding: 10px 12px;
+      background: rgba(239, 68, 68, .06);
+      color: var(--muted);
+      font-size: .67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid rgba(239, 68, 68, .15);
+      white-space: nowrap
+    }
+
+    .error-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(38, 44, 61, .5);
+      vertical-align: middle;
+      color: var(--text)
+    }
+
+    .error-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .error-table tr:hover td {
+      background: rgba(239, 68, 68, .04)
+    }
+
+    .error-motivo {
+      color: var(--red);
+      font-size: .75rem
+    }
+
+    .error-url a {
+      color: var(--accent2);
+      font-size: .72rem;
+      text-decoration: none;
+      display: block;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .error-url a:hover {
+      text-decoration: underline
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap
     }
 
     .hidden {
@@ -530,8 +711,6 @@
       width: 22px;
       height: 33px;
     }
-
-
 
     .dim-option input:checked + .dim-card .dim-preview::after {
       opacity: .7;
@@ -665,7 +844,7 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 32px;
-      max-width: 440px;
+      max-width: 460px;
       width: 90%;
       box-shadow: 0 24px 80px rgba(0, 0, 0, .5), 0 0 40px rgba(124, 110, 245, .1);
       transform: scale(.92) translateY(16px);
@@ -730,7 +909,7 @@
     .modal-detail .detail-label {
       color: var(--muted);
       font-size: .75rem;
-      min-width: 80px;
+      min-width: 90px;
     }
 
     .modal-detail .detail-value {
@@ -840,6 +1019,11 @@
 
       .modal {
         padding: 24px;
+      }
+
+      .log-actions {
+        margin-left: 0;
+        width: 100%
       }
     }
   </style>
@@ -955,6 +1139,13 @@
         <div class="toggle-hint">Recomendado: mantem o catalogo limpo.</div>
       </div>
     </div>
+    <div class="toggle-row" onclick="toggleSkipExisting()">
+      <div class="toggle-track" id="toggleSkipExisting"></div>
+      <div>
+        <div class="toggle-label">Ignorar fotos já no tamanho alvo</div>
+        <div class="toggle-hint">Fotos que já possuem as dimensões escolhidas serão puladas. Útil para reprocessamentos parciais.</div>
+      </div>
+    </div>
   </div>
 
   <!-- Actions -->
@@ -977,7 +1168,13 @@
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-      <div class="progress-info"><span id="progressLabel">Aguardando...</span><span id="progressPct">0%</span></div>
+      <div class="progress-info">
+        <span id="progressLabel">Aguardando...</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="eta-text" id="etaDisplay"></span>
+          <span id="progressPct">0%</span>
+        </div>
+      </div>
     </div>
     <div class="stats">
       <div class="stat">
@@ -1024,9 +1221,47 @@
       alteracoes clicando em "Desfazer tudo".</div>
   </div>
 
+  <!-- Error Panel -->
+  <div class="card hidden" id="errorPanel">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span class="card-title" style="margin:0;color:var(--red)">⚠️ Produtos com Erro</span>
+      <span class="badge badge-error" id="errorCountBadge">0 erros</span>
+    </div>
+    <div class="error-table-wrap">
+      <table class="error-table">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Product ID</th>
+            <th>Photo ID</th>
+            <th>Motivo do Erro</th>
+            <th>URL Original</th>
+          </tr>
+        </thead>
+        <tbody id="errorTableBody"></tbody>
+      </table>
+    </div>
+    <div class="error-actions">
+      <button class="btn btn-danger" onclick="reprocessErrors()">🔄 Reprocessar erros</button>
+      <button class="btn btn-outline" onclick="exportErrorsCsv()">📊 Exportar erros (CSV)</button>
+    </div>
+  </div>
+
   <!-- Log -->
   <div class="card hidden" id="logPanel">
-    <div class="card-title">Log de Atividade</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span class="card-title" style="margin:0" id="logPanelTitle">Log de Atividade</span>
+    </div>
+    <div class="log-toolbar">
+      <button class="log-filter-btn active" data-filter="all" onclick="setLogFilter('all')">Todos</button>
+      <button class="log-filter-btn" data-filter="info" onclick="setLogFilter('info')">Info</button>
+      <button class="log-filter-btn" data-filter="skip" onclick="setLogFilter('skip')">Avisos</button>
+      <button class="log-filter-btn" data-filter="err" onclick="setLogFilter('err')">Erros</button>
+      <div class="log-actions">
+        <button class="log-action-btn" onclick="clearLog()">Limpar</button>
+        <button class="log-action-btn" onclick="copyLog()">Copiar</button>
+      </div>
+    </div>
     <div class="log-wrap" id="logList"></div>
   </div>
 
@@ -1066,6 +1301,11 @@
           <span class="detail-label">Deletar antiga</span>
           <span class="detail-value" id="modalDelete">Sim</span>
         </div>
+        <div class="modal-detail">
+          <span class="detail-icon">⏭️</span>
+          <span class="detail-label">Ignorar existentes</span>
+          <span class="detail-value" id="modalSkip">Não</span>
+        </div>
         <div class="modal-warning" id="modalWarning">
           <span>⚠️</span>
           <span>Esta ação irá redimensionar as imagens e não poderá ser desfeita facilmente. Use o botão "Desfazer tudo" após o processamento se necessário.</span>
@@ -1081,34 +1321,52 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    // ── Estado global ───────────────────────────────────────────
     let deleteOld = false, running = false, activeSSE = null;
     let selectedWidth = 1000, selectedHeight = 1000;
     let fitMode = 'contain';
+    let skipExisting = false;
     let stats = { total: 0, ok: 0, skip: 0, err: 0 }, rollbackLog = [], reportLog = [];
+    let allLogs = [], logFilter = 'all', processStartTime = null;
 
+    // ── Init ────────────────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
       const t = localStorage.getItem('seleta_token'), o = localStorage.getItem('seleta_oi');
       if (t) document.getElementById('token').value = t;
       if (o) document.getElementById('oi').value = o;
     });
+
     function savePrefs() {
       localStorage.setItem('seleta_token', document.getElementById('token').value.trim());
       localStorage.setItem('seleta_oi', document.getElementById('oi').value.trim());
     }
+
     function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
+    function stripTags(html) { return html.replace(/<[^>]+>/g, ''); }
+
+    // ── Toggles ─────────────────────────────────────────────────
     function toggleDelete() {
       if (running) return; deleteOld = !deleteOld;
       document.getElementById('toggleDeleteOld').classList.toggle('on', deleteOld);
     }
+
+    function toggleSkipExisting() {
+      if (running) return; skipExisting = !skipExisting;
+      document.getElementById('toggleSkipExisting').classList.toggle('on', skipExisting);
+    }
+
     function setDimension(w, h) {
       if (running) return;
       selectedWidth = w;
       selectedHeight = h;
     }
+
     function setFitMode(mode) {
       if (running) return;
       fitMode = mode;
     }
+
+    // ── Modal ────────────────────────────────────────────────────
     function openModal() {
       const oi = document.getElementById('oi').value.trim();
       const skuRaw = document.getElementById('skus').value.trim();
@@ -1118,19 +1376,24 @@
       document.getElementById('modalSkus').textContent = skuList.length > 0 ? `${skuList.length} SKU(s)` : 'Todos os produtos';
       document.getElementById('modalFit').textContent = fitMode === 'cover' ? 'Preencher (corta bordas)' : 'Ajustar (fundo branco)';
       document.getElementById('modalDelete').textContent = deleteOld ? 'Sim' : 'Não';
+      document.getElementById('modalSkip').textContent = skipExisting ? 'Sim — pular fotos já no tamanho' : 'Não — processar todas';
       document.getElementById('confirmModal').classList.add('active');
     }
+
     function closeModal() {
       document.getElementById('confirmModal').classList.remove('active');
     }
+
     function confirmAndStart() {
       closeModal();
       startProcess();
     }
-    // Keyboard shortcut: Escape to close modal
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModal();
     });
+
+    // ── Toast ────────────────────────────────────────────────────
     let toastT = null;
     function showToast(icon, msg) {
       const t = document.getElementById('toast');
@@ -1138,21 +1401,93 @@
       t.classList.add('show'); clearTimeout(toastT);
       toastT = setTimeout(() => t.classList.remove('show'), 3500);
     }
+
+    // ── Log ──────────────────────────────────────────────────────
     const TP = { info: 'info', ok: 'ok', err: 'err', skip: 'skip', error: 'err' };
     const IC = { info: '\u23F3', ok: '\u2705', err: '\u274C', skip: '\u26A0\uFE0F' };
+
     function addLog(tp, msg) {
       show('logPanel');
-      const list = document.getElementById('logList');
-      while (list.children.length >= 200) list.removeChild(list.firstChild);
       const now = new Date().toLocaleTimeString('pt-BR');
       const type = TP[tp] || 'info';
+
+      // Criar elemento
       const d = document.createElement('div');
       d.className = `log-item ${type}`;
       d.innerHTML = `<span class="log-icon">${IC[type] || '\u23F3'}</span><span class="log-msg">${msg}</span><span class="log-time">${now}</span>`;
-      list.appendChild(d); list.scrollTop = list.scrollHeight;
+
+      // Armazenar (máx 500)
+      allLogs.push({ type, time: now, htmlMsg: msg, plainMsg: stripTags(msg) });
+      if (allLogs.length > 500) allLogs.shift();
+
+      // Exibir somente se passa no filtro atual
+      if (logFilter === 'all' || logFilter === type) {
+        const list = document.getElementById('logList');
+        list.appendChild(d);
+        list.scrollTop = list.scrollHeight;
+      }
+
+      updateLogCounters();
     }
+
+    function updateLogCounters() {
+      const errCount  = allLogs.filter(l => l.type === 'err').length;
+      const skipCount = allLogs.filter(l => l.type === 'skip').length;
+      const titleEl = document.getElementById('logPanelTitle');
+      if (!titleEl) return;
+      let html = 'Log de Atividade';
+      if (errCount > 0)  html += ` <span class="log-counter-badge log-counter-err">${errCount} erro(s)</span>`;
+      if (skipCount > 0) html += ` <span class="log-counter-badge log-counter-skip">${skipCount} aviso(s)</span>`;
+      titleEl.innerHTML = html;
+    }
+
+    function setLogFilter(f) {
+      logFilter = f;
+      // Atualizar estado visual dos botões
+      document.querySelectorAll('.log-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'active-err', 'active-skip');
+        if (btn.dataset.filter === f) {
+          if (f === 'err')  btn.classList.add('active-err');
+          else if (f === 'skip') btn.classList.add('active-skip');
+          else btn.classList.add('active');
+        }
+      });
+      // Re-renderizar log filtrado
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const list = document.getElementById('logList');
+      list.innerHTML = '';
+      const filtered = logFilter === 'all' ? allLogs : allLogs.filter(l => l.type === logFilter);
+      filtered.forEach(({ type, time, htmlMsg }) => {
+        const d = document.createElement('div');
+        d.className = `log-item ${type}`;
+        d.innerHTML = `<span class="log-icon">${IC[type] || '\u23F3'}</span><span class="log-msg">${htmlMsg}</span><span class="log-time">${time}</span>`;
+        list.appendChild(d);
+      });
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function clearLog() {
+      allLogs = [];
+      document.getElementById('logList').innerHTML = '';
+      updateLogCounters();
+    }
+
+    function copyLog() {
+      if (!allLogs.length) { showToast('\u2139\uFE0F', 'Nenhum log para copiar.'); return; }
+      const text = allLogs.map(l => `[${l.time}] ${l.plainMsg}`).join('\n');
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('\uD83D\uDCCB', `${allLogs.length} linha(s) copiadas!`))
+        .catch(() => showToast('\u274C', 'Falha ao copiar.'));
+    }
+
+    // ── Utilitários de visibilidade ──────────────────────────────
     function show(id) { document.getElementById(id).classList.remove('hidden') }
     function hide(id) { document.getElementById(id).classList.add('hidden') }
+
+    // ── Progresso ────────────────────────────────────────────────
     function setProgress(done, total) {
       const p = total > 0 ? Math.round(done / total * 100) : 0;
       document.getElementById('progressFill').style.width = p + '%';
@@ -1163,24 +1498,46 @@
       document.getElementById('statSkip').textContent = stats.skip;
       document.getElementById('statErr').textContent = stats.err;
     }
+
     function setStatus(type, text) {
       const b = document.getElementById('statusBadge');
       b.className = `badge badge-${type}`; b.textContent = text;
     }
+
+    // ── Reset ────────────────────────────────────────────────────
     function resetAll() {
-      running = false; if (activeSSE) { activeSSE.close(); activeSSE = null }
+      running = false; if (activeSSE) { activeSSE.close(); activeSSE = null; }
       stats = { total: 0, ok: 0, skip: 0, err: 0 }; reportLog = []; rollbackLog = [];
-      ['progressCard', 'summaryPanel', 'logPanel'].forEach(hide);
+      allLogs = []; logFilter = 'all'; processStartTime = null;
+
+      ['progressCard', 'summaryPanel', 'logPanel', 'errorPanel'].forEach(hide);
       show('startBtn'); hide('cancelBtn'); hide('exportBtn'); hide('rollbackBtn'); hide('rollbackNote');
-      document.getElementById('logList').innerHTML = ''; setProgress(0, 0);
+
+      document.getElementById('logList').innerHTML = '';
+      document.getElementById('logPanelTitle').innerHTML = 'Log de Atividade';
+      document.getElementById('etaDisplay').textContent = '';
+      document.getElementById('errorTableBody').innerHTML = '';
+
+      // Reset barra de progresso e filtros
+      const fill = document.getElementById('progressFill');
+      fill.className = 'progress-fill';
+      fill.style.width = '0%';
+      document.getElementById('progressPct').textContent = '0%';
+      document.getElementById('progressLabel').textContent = 'Aguardando...';
+      document.querySelectorAll('.log-filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'active-err', 'active-skip');
+        if (btn.dataset.filter === 'all') btn.classList.add('active');
+      });
     }
+
     function cancelProcess() {
-      if (activeSSE) { activeSSE.close(); activeSSE = null }
+      if (activeSSE) { activeSSE.close(); activeSSE = null; }
       running = false; addLog('skip', 'Processamento cancelado pelo usuario.');
       setStatus('error', 'Cancelado'); finalize(true);
     }
+
+    // ── SSE ──────────────────────────────────────────────────────
     function connectSSE(jobId) {
-      // Forçar URL absoluta para o EventSource também
       const sseUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/progress/' : '/api/progress/';
       let retryCount = 0;
       const MAX_RETRIES = 10;
@@ -1188,34 +1545,69 @@
       function connect() {
         const es = new EventSource(sseUrl + jobId);
         activeSSE = es;
+
         es.onopen = () => {
-          if (retryCount > 0) {
-            addLog('ok', `Conexão SSE restabelecida (após ${retryCount} tentativa(s)).`);
-          }
+          if (retryCount > 0) addLog('ok', `Conexão SSE restabelecida (após ${retryCount} tentativa(s)).`);
           retryCount = 0;
         };
+
         es.onmessage = (e) => {
-          let d; try { d = JSON.parse(e.data) } catch { return }
-          if (d.event === 'log') addLog(d.tp || 'info', d.msg);
-          else if (d.event === 'progress') {
+          let d; try { d = JSON.parse(e.data); } catch { return; }
+
+          if (d.event === 'log') {
+            addLog(d.tp || 'info', d.msg);
+
+          } else if (d.event === 'progress') {
             stats.total = d.total; stats.ok = d.ok; stats.err = d.erros;
             setProgress(d.done, d.total);
+
+            // Calcular ETA
+            if (processStartTime && d.done > 0) {
+              const elapsed = (Date.now() - processStartTime) / 1000;
+              const rate = d.done / elapsed;
+              const remaining = Math.round((d.total - d.done) / rate);
+              const etaEl = document.getElementById('etaDisplay');
+              if (remaining > 0) {
+                etaEl.textContent = remaining >= 60
+                  ? `~${Math.floor(remaining / 60)}min ${remaining % 60}s restantes`
+                  : `~${remaining}s restantes`;
+              } else {
+                etaEl.textContent = '';
+              }
+            }
+
           } else if (d.event === 'complete') {
             es.close(); activeSSE = null;
             const res = d.results || [];
             res.forEach(r => {
-              reportLog.push({ sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto, variacao: r.variacao || '', oldUrl: r.url_original, newPhotoId: r._newPhotoId || '', newUrl: r.nova_url || '', status: r.status, motivo: r.motivo_erro || '' });
-              if (r.status === 'SUCESSO' && r._newPhotoId) rollbackLog.push({ prodId: r.id_produto, oldPhotoId: r.id_foto, restoreUrl: r.url_original, newPhotoId: r._newPhotoId, index: r._idx ?? 0, isMain: r._isMain ?? false, wasDeleted: r._oldDeleted ?? false, variacao: r._variacao || '' });
+              reportLog.push({
+                sku: r.sku, prodId: r.id_produto, oldPhotoId: r.id_foto,
+                variacao: r.variacao || '', oldUrl: r.url_original,
+                newPhotoId: r._newPhotoId || '', newUrl: r.nova_url || '',
+                status: r.status, motivo: r.motivo_erro || ''
+              });
+              if (r.status === 'SUCESSO' && r._newPhotoId) {
+                rollbackLog.push({
+                  prodId: r.id_produto, oldPhotoId: r.id_foto, restoreUrl: r.url_original,
+                  newPhotoId: r._newPhotoId, index: r._idx ?? 0,
+                  isMain: r._isMain ?? false, wasDeleted: r._oldDeleted ?? false,
+                  variacao: r._variacao || ''
+                });
+              }
             });
             stats.total = d.total; stats.ok = d.ok; stats.err = d.erros; stats.skip = 0;
-            setProgress(d.total, d.total); setStatus('done', 'Concluido');
+            setProgress(d.total, d.total);
+            setStatus('done', 'Concluido');
             addLog('ok', `Finalizado: ${d.ok} sucesso(s), ${d.erros} erro(s).`);
             finalize(false);
+
           } else if (d.event === 'error') {
-            es.close(); activeSSE = null; addLog('err', `Erro fatal: ${d.msg}`);
+            es.close(); activeSSE = null;
+            addLog('err', `Erro fatal: ${d.msg}`);
             setStatus('error', 'Erro'); showToast('\u274C', d.msg); finalize(false);
           }
         };
+
         es.onerror = () => {
           es.close();
           if (!running) { activeSSE = null; return; }
@@ -1228,47 +1620,59 @@
             return;
           }
           const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 30000);
-          addLog('skip', `Conexão SSE perdida. Reconectando em ${Math.round(delay/1000)}s... (tentativa ${retryCount}/${MAX_RETRIES})`);
-          setTimeout(() => {
-            if (running) connect();
-          }, delay);
+          addLog('skip', `Conexão SSE perdida. Reconectando em ${Math.round(delay / 1000)}s... (tentativa ${retryCount}/${MAX_RETRIES})`);
+          setTimeout(() => { if (running) connect(); }, delay);
         };
       }
 
       connect();
     }
+
+    // ── Start ────────────────────────────────────────────────────
     async function startProcess() {
       const token = document.getElementById('token').value.trim();
-      const oi = document.getElementById('oi').value.trim();
+      const oi    = document.getElementById('oi').value.trim();
       const skuRaw = document.getElementById('skus').value.trim();
-      if (!token) { showToast('\u26A0\uFE0F', 'Preencha o Token AnyMarket.'); return }
-      if (!oi) { showToast('\u26A0\uFE0F', 'Preencha o OI.'); return }
-      savePrefs(); running = true; stats = { total: 0, ok: 0, skip: 0, err: 0 }; rollbackLog = []; reportLog = [];
-      show('progressCard'); hide('summaryPanel'); hide('startBtn'); show('cancelBtn');
-      setStatus('running', 'Executando'); document.getElementById('logList').innerHTML = '';
-      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
-      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'} | Dimensão: <strong>${selectedWidth}×${selectedHeight}</strong> | Modo: <strong>${fitMode === 'cover' ? 'Preencher' : 'Ajustar'}</strong>`);
-      try {
-        // Forçar URL absoluta baseada no contexto
-        const apiUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/processar' : '/api/processar';
+      if (!token) { showToast('\u26A0\uFE0F', 'Preencha o Token AnyMarket.'); return; }
+      if (!oi)    { showToast('\u26A0\uFE0F', 'Preencha o OI.'); return; }
 
+      savePrefs();
+      running = true;
+      processStartTime = Date.now();
+      stats = { total: 0, ok: 0, skip: 0, err: 0 };
+      rollbackLog = []; reportLog = []; allLogs = [];
+
+      show('progressCard'); hide('summaryPanel'); hide('errorPanel');
+      hide('startBtn'); show('cancelBtn');
+      setStatus('running', 'Executando');
+      document.getElementById('logList').innerHTML = '';
+      document.getElementById('etaDisplay').textContent = '';
+      document.getElementById('progressFill').className = 'progress-fill';
+
+      const skuList = skuRaw ? skuRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      const skipTxt = skipExisting ? ' | Ignorar existentes: <strong>Sim</strong>' : '';
+      addLog('info', `Iniciando \u2014 OI: <strong>${esc(oi)}</strong>${skuList.length ? ` | ${skuList.length} SKU(s)` : ' | todos os produtos'} | Dimensão: <strong>${selectedWidth}×${selectedHeight}</strong> | Modo: <strong>${fitMode === 'cover' ? 'Preencher' : 'Ajustar'}</strong>${skipTxt}`);
+
+      try {
+        const apiUrl = window.location.pathname.includes('/resizer') ? '/resizer/api/processar' : '/api/processar';
         const resp = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ oi, token, skus: skuList, deleteOld, width: selectedWidth, height: selectedHeight, fitMode })
+          body: JSON.stringify({
+            oi, token, skus: skuList, deleteOld, skipExisting,
+            width: selectedWidth, height: selectedHeight, fitMode
+          })
         });
 
         const text = await resp.text();
         let json;
-        try {
-          json = JSON.parse(text);
-        } catch (e) {
-          throw new Error(`Resposta do servidor não é JSON: ${text.slice(0, 100)}`);
-        }
+        try { json = JSON.parse(text); }
+        catch (e) { throw new Error(`Resposta do servidor não é JSON: ${text.slice(0, 100)}`); }
 
         if (!resp.ok || !json.ok) throw new Error(json.error || `Erro ${resp.status}`);
         addLog('info', `Job criado: <strong>${esc(json.jobId)}</strong>. Aguardando progresso...`);
         connectSSE(json.jobId);
+
       } catch (err) {
         addLog('err', esc(err.message));
         setStatus('error', 'Erro');
@@ -1276,52 +1680,157 @@
         finalize(false);
       }
     }
+
+    // ── Finalize ─────────────────────────────────────────────────
     function finalize(cancelled) {
-      running = false; show('startBtn'); hide('cancelBtn'); show('summaryPanel');
+      running = false;
+      show('startBtn'); hide('cancelBtn');
+      show('summaryPanel');
+
       document.getElementById('sumTotal').textContent = stats.total;
-      document.getElementById('sumOk').textContent = stats.ok;
-      document.getElementById('sumSkip').textContent = stats.skip;
-      document.getElementById('sumErr').textContent = stats.err;
+      document.getElementById('sumOk').textContent    = stats.ok;
+      document.getElementById('sumSkip').textContent  = stats.skip;
+      document.getElementById('sumErr').textContent   = stats.err;
+
+      // Barra de progresso semântica
+      const fill = document.getElementById('progressFill');
+      if (!cancelled) {
+        if (stats.err === 0 && stats.ok > 0) fill.classList.add('success');
+        else if (stats.err > 0) fill.classList.add('has-error');
+      }
+
+      // Limpar ETA
+      document.getElementById('etaDisplay').textContent = '';
+
       if (cancelled) showToast('\u26D4', `Cancelado. ${stats.ok} foto(s) processadas.`);
       else if (stats.err === 0 && stats.ok > 0) showToast('\uD83C\uDF89', `${stats.ok} foto(s) processadas com sucesso!`);
       else if (stats.err > 0) showToast('\u26A0\uFE0F', `Concluido com ${stats.err} erro(s).`);
-      if (rollbackLog.length > 0) { show('rollbackBtn'); show('rollbackNote') }
-      if (reportLog.length > 0) show('exportBtn');
+
+      if (rollbackLog.length > 0) { show('rollbackBtn'); show('rollbackNote'); }
+      if (reportLog.length > 0)   show('exportBtn');
+
+      // Painel de erros
+      const errors = reportLog.filter(r => r.status === 'ERRO');
+      if (errors.length > 0) populateErrorPanel(errors);
     }
+
+    // ── Error Panel ──────────────────────────────────────────────
+    function populateErrorPanel(errors) {
+      show('errorPanel');
+      document.getElementById('errorCountBadge').textContent = `${errors.length} erro(s)`;
+      const tbody = document.getElementById('errorTableBody');
+      tbody.innerHTML = '';
+      errors.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${esc(r.sku || '—')}</td>
+          <td>${esc(r.prodId || '—')}</td>
+          <td>${esc(r.oldPhotoId || '—')}</td>
+          <td class="error-motivo">${esc(r.motivo || '—')}</td>
+          <td class="error-url"><a href="${esc(r.oldUrl)}" target="_blank" title="${esc(r.oldUrl)}">${esc(r.oldUrl || '—')}</a></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportErrorsCsv() {
+      const errors = reportLog.filter(r => r.status === 'ERRO');
+      if (!errors.length) { showToast('\u2139\uFE0F', 'Nenhum erro para exportar.'); return; }
+      const BOM = '\uFEFF';
+      const h = ['SKU', 'Product ID', 'Photo ID', 'Motivo do Erro', 'URL Original'];
+      const rows = errors.map(r =>
+        [r.sku, r.prodId, r.oldPhotoId, r.motivo, r.oldUrl]
+          .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)
+          .join(';')
+      );
+      const csv = BOM + [h.map(x => `"${x}"`).join(';'), ...rows].join('\n');
+      const n = new Date();
+      const ts = `${n.getFullYear()}${String(n.getMonth() + 1).padStart(2, '0')}${String(n.getDate()).padStart(2, '0')}_${String(n.getHours()).padStart(2, '0')}${String(n.getMinutes()).padStart(2, '0')}`;
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = `seleta_erros_${ts}.csv`;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => document.body.removeChild(a), 200);
+      showToast('\uD83D\uDCCA', `${errors.length} erro(s) exportados.`);
+    }
+
+    function reprocessErrors() {
+      const errors = reportLog.filter(r => r.status === 'ERRO');
+      if (!errors.length) return;
+      const skuList = [...new Set(errors.map(r => r.sku).filter(Boolean))];
+      if (!skuList.length) { showToast('\u26A0\uFE0F', 'Nenhum SKU identificado nos erros.'); return; }
+      document.getElementById('skus').value = skuList.join('\n');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('\uD83D\uDD04', `${skuList.length} SKU(s) carregados. Revise e inicie novamente.`);
+    }
+
+    // ── Export (geral) ───────────────────────────────────────────
     function exportSpreadsheet() {
-      if (!reportLog.length) { showToast('\u2139\uFE0F', 'Nenhum dado.'); return }
+      if (!reportLog.length) { showToast('\u2139\uFE0F', 'Nenhum dado.'); return; }
       const BOM = '\uFEFF';
       const h = ['SKU', 'Product ID', 'Variacao', 'Photo ID Antigo', 'URL Antiga', 'Photo ID Novo', 'URL Nova', 'Status', 'Motivo'];
-      const rows = reportLog.map(r => [r.sku, r.prodId, r.variacao, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status, r.motivo].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'));
+      // Ordenar: SUCESSO primeiro, ERRO no final
+      const sorted = [...reportLog].sort((a, b) => {
+        if (a.status === 'SUCESSO' && b.status !== 'SUCESSO') return -1;
+        if (a.status !== 'SUCESSO' && b.status === 'SUCESSO') return 1;
+        return 0;
+      });
+      const rows = sorted.map(r =>
+        [r.sku, r.prodId, r.variacao, r.oldPhotoId, r.oldUrl, r.newPhotoId, r.newUrl, r.status, r.motivo]
+          .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)
+          .join(';')
+      );
       const csv = BOM + [h.map(x => `"${x}"`).join(';'), ...rows].join('\n');
-      const n = new Date(); const ts = `${n.getFullYear()}${String(n.getMonth() + 1).padStart(2, '0')}${String(n.getDate()).padStart(2, '0')}_${String(n.getHours()).padStart(2, '0')}${String(n.getMinutes()).padStart(2, '0')}`;
-      const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-      a.download = `seleta_resizer_${ts}.csv`; document.body.appendChild(a); a.click(); setTimeout(() => document.body.removeChild(a), 200);
+      const n = new Date();
+      const ts = `${n.getFullYear()}${String(n.getMonth() + 1).padStart(2, '0')}${String(n.getDate()).padStart(2, '0')}_${String(n.getHours()).padStart(2, '0')}${String(n.getMinutes()).padStart(2, '0')}`;
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = `seleta_resizer_${ts}.csv`;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => document.body.removeChild(a), 200);
       showToast('\uD83D\uDCCA', `Planilha exportada: ${reportLog.length} linha(s).`);
     }
+
+    // ── Rollback ─────────────────────────────────────────────────
     let rbPend = false, rbTimer = null;
     async function startRollback() {
       const token = document.getElementById('token').value.trim();
-      if (!token) { showToast('\u26A0\uFE0F', 'Token necessario.'); return }
-      if (!rollbackLog.length) { showToast('\u2139\uFE0F', 'Nada a desfazer.'); return }
+      if (!token) { showToast('\u26A0\uFE0F', 'Token necessario.'); return; }
+      if (!rollbackLog.length) { showToast('\u2139\uFE0F', 'Nada a desfazer.'); return; }
       if (!rbPend) {
         rbPend = true; const btn = document.getElementById('rollbackBtn');
         btn.style.cssText = 'background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.6);color:#f59e0b';
         btn.textContent = `Clique novamente para confirmar (${rollbackLog.length} foto(s))`;
-        rbTimer = setTimeout(() => { rbPend = false; btn.style.cssText = ''; btn.textContent = 'Desfazer tudo' }, 5000); return;
+        rbTimer = setTimeout(() => { rbPend = false; btn.style.cssText = ''; btn.textContent = 'Desfazer tudo'; }, 5000);
+        return;
       }
       clearTimeout(rbTimer); rbPend = false;
       const btn = document.getElementById('rollbackBtn'); btn.disabled = true; btn.textContent = 'Desfazendo...';
       hide('rollbackNote'); document.getElementById('logList').innerHTML = '';
+      allLogs = [];
       addLog('info', `Iniciando rollback de <strong>${rollbackLog.length}</strong> foto(s)...`);
       let ok = 0, er = 0;
       for (const e of rollbackLog) {
         addLog('info', `Produto <strong>${esc(e.prodId)}</strong> \u2014 foto <strong>${esc(e.oldPhotoId)}</strong>`);
         try {
-          if (e.newPhotoId) { const r = await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images/${e.newPhotoId}`, { method: 'DELETE', headers: { gumgaToken: token } }); if (r.ok || r.status === 204) addLog('ok', `Foto nova ${esc(e.newPhotoId)} removida.`) }
-          if (e.wasDeleted && e.restoreUrl) { const restoreBody = { url: e.restoreUrl, index: e.index, main: false }; if (e.variacao) restoreBody.variation = e.variacao; const r = await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`, { method: 'POST', headers: { gumgaToken: token, 'Content-Type': 'application/json' }, body: JSON.stringify(restoreBody) }); const d = await r.json().catch(() => ({})); if (d.id) addLog('ok', `Foto original restaurada: ${esc(d.id)}`); else addLog('err', 'Falha ao restaurar') }
+          if (e.newPhotoId) {
+            const r = await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images/${e.newPhotoId}`, { method: 'DELETE', headers: { gumgaToken: token } });
+            if (r.ok || r.status === 204) addLog('ok', `Foto nova ${esc(e.newPhotoId)} removida.`);
+          }
+          if (e.wasDeleted && e.restoreUrl) {
+            const restoreBody = { url: e.restoreUrl, index: e.index, main: false };
+            if (e.variacao) restoreBody.variation = e.variacao;
+            const r = await fetch(`https://api.anymarket.com.br/v2/products/${e.prodId}/images`, {
+              method: 'POST',
+              headers: { gumgaToken: token, 'Content-Type': 'application/json' },
+              body: JSON.stringify(restoreBody)
+            });
+            const d = await r.json().catch(() => ({}));
+            if (d.id) addLog('ok', `Foto original restaurada: ${esc(d.id)}`);
+            else addLog('err', 'Falha ao restaurar');
+          }
           ok++;
-        } catch (x) { addLog('err', esc(x.message)); er++ }
+        } catch (x) { addLog('err', esc(x.message)); er++; }
         await new Promise(r => setTimeout(r, 800));
       }
       rollbackLog = []; hide('rollbackBtn'); btn.disabled = false; btn.textContent = 'Desfazer tudo';

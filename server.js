@@ -9,6 +9,17 @@ try { sharp = require('sharp'); } catch { console.warn('⚠️  sharp não insta
 const TEMP_DIR = path.join(__dirname, 'temp');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
 
+// ── Logger ───────────────────────────────────────────────────
+const LOG_LEVELS = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+const LOG_LEVEL  = LOG_LEVELS[(process.env.LOG_LEVEL || 'INFO').toUpperCase()] ?? 1;
+const LOG_ICONS  = { DEBUG: '🔍', INFO: 'ℹ️ ', WARN: '⚠️ ', ERROR: '❌' };
+function ts() { return new Date().toLocaleTimeString('pt-BR', { hour12: false }); }
+function log(level, ...args) {
+  if ((LOG_LEVELS[level] ?? 0) < LOG_LEVEL) return;
+  const icon = LOG_ICONS[level] || '';
+  console.log(`[${ts()}] [${level}] ${icon}`, ...args);
+}
+
 const PORT        = 8080;
 const N8N_HOST    = 'api.marcaseleta.shop';
 const N8N_PORT    = 80;
@@ -35,7 +46,7 @@ const jobs = new Map();
 function createJob() {
   const id = `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   jobs.set(id, { clients: [], done: false, heartbeat: null });
-  setTimeout(() => jobs.delete(id), 60 * 60 * 1000); // limpar após 1h
+  setTimeout(() => jobs.delete(id), 5 * 60 * 1000); // limpar após 5min
   return id;
 }
 
@@ -79,16 +90,16 @@ function httpsGet(url) {
       };
 
       protocol.get(u, options, res => {
-        console.log(`[DEBUG] Download: ${u} | Status: ${res.statusCode}`);
+        log('DEBUG', `Download: ${u} | Status: ${res.statusCode}`);
         if ([301,302,303,307,308].includes(res.statusCode) && res.headers.location) {
           const next = new URL(res.headers.location, u).href;
-          console.log(`[DEBUG] Redirecionando para: ${next}`);
+          log('DEBUG', `Redirecionando para: ${next}`);
           return doGet(next, hops + 1);
         }
 
         if (res.statusCode === 403) {
-          console.error(`[ERROR] 403 Forbidden na URL: ${u}`);
-          console.error(`[ERROR] Headers de resposta:`, JSON.stringify(res.headers));
+          log('ERROR', `403 Forbidden na URL: ${u}`);
+          log('ERROR', `Headers: ${JSON.stringify(res.headers)}`);
         }
 
         const chunks = [];
@@ -96,7 +107,7 @@ function httpsGet(url) {
         res.on('end',  () => resolve({ status: res.statusCode, body: Buffer.concat(chunks) }));
         res.on('error', reject);
       }).on('error', err => {
-        console.error(`[ERROR] Erro na requisição HTTPS: ${err.message}`);
+        log('ERROR', `Erro na requisição HTTPS: ${err.message}`);
         reject(err);
       });
     };
@@ -166,7 +177,7 @@ async function processAmQueue() {
 }
 
 function amRequest(method, reqPath, body, token) {
-  return scheduleAnyMarketRequest(() => 
+  return scheduleAnyMarketRequest(() =>
     jsonRequest(method, AM_HOST, reqPath, body, { gumgaToken: token })
   );
 }
@@ -232,7 +243,7 @@ async function processOneFoto(jobId, foto, index, total, { token, deleteOld, wid
     let postR;
     for (let attempt = 1; attempt <= 3; attempt++) {
       postR = await amRequest('POST', `/v2/products/${foto.id_produto}/images`, postBody, token);
-      console.log(`[DEBUG] POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
+      log('DEBUG', `POST AnyMarket (tentativa ${attempt}): status=${postR.status} body=${JSON.stringify(postR.body).slice(0,200)}`);
 
       if (postR.status < 400 && postR.body.id) break;
 
@@ -291,10 +302,13 @@ async function processOneFoto(jobId, foto, index, total, { token, deleteOld, wid
   return result;
 }
 
-async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000, fitMode = 'contain' }) {
+async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, height = 1000, fitMode = 'contain', skipExisting = false }) {
   try {
-    emit(jobId, { event: 'log', tp: 'info', msg: '🔍 Consultando banco de dados via n8n...' });
-    const n8nResp = await jsonRequest('POST', N8N_HOST, N8N_PATH, { oi, skus }, {}, N8N_PORT);
+    const skipMsg = skipExisting ? ` (ignorando fotos já em ${width}×${height})` : '';
+    emit(jobId, { event: 'log', tp: 'info', msg: `🔍 Consultando banco de dados via n8n${skipMsg}...` });
+
+    // Propaga width, height e skipExisting para o n8n filtrar na query SQL
+    const n8nResp = await jsonRequest('POST', N8N_HOST, N8N_PATH, { oi, skus, width, height, skipExisting }, {}, N8N_PORT);
 
     if (n8nResp.status !== 200 || !n8nResp.body.ok) {
       emit(jobId, { event: 'error', msg: `Falha n8n (${n8nResp.status}): ${JSON.stringify(n8nResp.body).slice(0,200)}` });
@@ -302,9 +316,13 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, he
     }
 
     const fotos = n8nResp.body.fotos || [];
-    console.log(`[DEBUG] Resposta n8n: ${JSON.stringify(n8nResp.body).slice(0, 500)}`);
+    log('DEBUG', `Resposta n8n: ${JSON.stringify(n8nResp.body).slice(0, 500)}`);
+
     if (fotos.length === 0) {
-      emit(jobId, { event: 'log', tp: 'skip', msg: `⚠️ Nenhuma imagem encontrada fora de ${width}×${height}.` });
+      const noneMsg = skipExisting
+        ? `⚠️ Nenhuma imagem encontrada fora de ${width}×${height}. Todas as fotos já estão no tamanho correto!`
+        : `⚠️ Nenhuma imagem encontrada.`;
+      emit(jobId, { event: 'log', tp: 'skip', msg: noneMsg });
       emit(jobId, { event: 'complete', total: 0, ok: 0, erros: 0, results: [] });
       return;
     }
@@ -347,7 +365,7 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, he
     }
     await Promise.all(workers);
 
-    const ok   = results.filter(r => r.status === 'SUCESSO').length;
+    const ok    = results.filter(r => r.status === 'SUCESSO').length;
     const erros = results.length - ok;
     emit(jobId, { event: 'complete', total: results.length, ok, erros, results });
 
@@ -358,14 +376,14 @@ async function procesarJob(jobId, { oi, skus, token, deleteOld, width = 1000, he
 
 // ── Servidor ─────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
-  console.log(`[DEBUG] ${new Date().toISOString()} | ${req.method} ${req.url}`);
+  log('DEBUG', `${req.method} ${req.url}`);
 
   res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  // Normalizar URL: 
+  // Normalizar URL:
   // 1. Remover query strings
   let pathname = req.url.split('?')[0];
 
@@ -382,15 +400,28 @@ const server = http.createServer(async (req, res) => {
     pathname = pathname.slice(0, -1);
   }
 
-  console.log(`[DEBUG] Pathname Processado: ${pathname}`);
+  log('DEBUG', `Pathname: ${pathname}`);
+
+  // ── GET /api/health ──────────────────────────────────────────
+  if (req.method === 'GET' && pathname === '/api/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      ok: true,
+      jobs: jobs.size,
+      uptime: Math.round(process.uptime()),
+      queueLength: amQueue.length,
+    }));
+    return;
+  }
 
   // ── POST /api/processar ─────────────────────────────────────
   if (req.method === 'POST' && pathname === '/api/processar') {
     try {
       const body = JSON.parse((await readBody(req)).toString());
-      const oi       = (body.oi    ?? '').trim();
-      const token    = (body.token ?? '').trim();
-      const deleteOld = body.deleteOld === true;
+      const oi          = (body.oi    ?? '').trim();
+      const token       = (body.token ?? '').trim();
+      const deleteOld   = body.deleteOld === true;
+      const skipExisting = body.skipExisting === true;
       let skus = Array.isArray(body.skus) ? body.skus
                : typeof body.skus === 'string' && body.skus.trim()
                  ? body.skus.split(/[\n,]/).map(s => s.trim()).filter(Boolean)
@@ -401,15 +432,16 @@ const server = http.createServer(async (req, res) => {
       if (!/^[\w.\-]+$/.test(oi)) throw new Error('OI contém caracteres inválidos');
       skus = skus.filter(s => /^[\w.\-\/]+$/.test(s));
 
-      const jobId = createJob();
-      // Processar em background (não bloqueia o response)
+      const jobId  = createJob();
       const width  = parseInt(body.width, 10)  || 1000;
       const height = parseInt(body.height, 10) || 1000;
+
       // Validar dimensões permitidas
       const allowed = ['800x1200', '1000x1000', '1000x1500', '1500x1500'];
       if (!allowed.includes(`${width}x${height}`)) throw new Error(`Dimensão ${width}x${height} não permitida. Use: ${allowed.join(', ')}`);
       const fitMode = (body.fitMode === 'cover') ? 'cover' : 'contain';
-      procesarJob(jobId, { oi, skus, token, deleteOld, width, height, fitMode });
+
+      procesarJob(jobId, { oi, skus, token, deleteOld, width, height, fitMode, skipExisting });
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, jobId }));
@@ -436,9 +468,9 @@ const server = http.createServer(async (req, res) => {
     res.setTimeout(0);
 
     res.writeHead(200, {
-      'Content-Type'  : 'text/event-stream',
-      'Cache-Control' : 'no-cache',
-      'Connection'    : 'keep-alive',
+      'Content-Type'     : 'text/event-stream',
+      'Cache-Control'    : 'no-cache',
+      'Connection'       : 'keep-alive',
       'X-Accel-Buffering': 'no', // nginx
     });
     res.write(': connected\n\n');
@@ -497,9 +529,9 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && pathname.startsWith('/temp/')) {
     const filename = path.basename(pathname.split('?')[0]);
     const filepath = path.join(TEMP_DIR, filename);
-    if (!fs.existsSync(filepath)) { 
-      console.error(`[ERROR] File not found: ${filepath}`);
-      res.writeHead(404); res.end('Not found'); return; 
+    if (!fs.existsSync(filepath)) {
+      log('WARN', `File not found: ${filepath}`);
+      res.writeHead(404); res.end('Not found'); return;
     }
     res.writeHead(200, { 'Content-Type': 'image/jpeg' });
     fs.createReadStream(filepath).pipe(res);
@@ -536,11 +568,11 @@ const server = http.createServer(async (req, res) => {
   filePath = path.join(__dirname, filePath);
   const ext = path.extname(filePath);
   fs.readFile(filePath, (err, data) => {
-    if (err) { 
-      console.error(`[ERROR] Static file not found: ${filePath} (from pathname: ${pathname})`);
-      res.writeHead(404); 
-      res.end('Not found'); 
-      return; 
+    if (err) {
+      log('WARN', `Static file not found: ${filePath} (pathname: ${pathname})`);
+      res.writeHead(404);
+      res.end('Not found');
+      return;
     }
     res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
     res.end(data);
@@ -552,5 +584,5 @@ server.timeout = 0;          // Sem timeout para requests (SSE pode durar horas)
 server.keepAliveTimeout = 0; // Manter conexões keep-alive indefinidamente
 
 server.listen(PORT, () => {
-  console.log(`\n  ✅ Seleta Resizer rodando na porta ${PORT} (concorrência: ${CONCURRENCY})\n`);
+  log('INFO', `✅ Seleta Resizer rodando na porta ${PORT} | concorrência: ${CONCURRENCY} | LOG_LEVEL: ${process.env.LOG_LEVEL || 'INFO'}`);
 });
